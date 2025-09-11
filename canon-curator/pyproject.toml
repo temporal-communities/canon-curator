@@ -1,0 +1,18 @@
+[project]
+name = "canon-curator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Lisa Poggel", email = "l.poggel@fu-berlin.de" },
+    { name = "Viktor Illmer", email = "v.illmer@fu-berlin.de" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+canon-curator = "canon_curator:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
