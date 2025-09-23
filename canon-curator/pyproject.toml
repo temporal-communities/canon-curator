@@ -1,7 +1,7 @@
 [project]
 name = "canon-curator"
 version = "0.1.0"
-description = "Add your description here"
+description = "A modular ETL workflow to enrich literary canons with metadata and metrics"
 readme = "README.md"
 authors = [
     { name = "Lisa Poggel", email = "l.poggel@fu-berlin.de" },
