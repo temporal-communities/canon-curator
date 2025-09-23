@@ -1,0 +1,14 @@
+# Virtual environment
+.venv/
+
+# Caches
+.ruff_cache/
+.pytest_cache/
+__pycache__
+
+# Editor
+.idea
+
+# Project
+uv.lock
+
