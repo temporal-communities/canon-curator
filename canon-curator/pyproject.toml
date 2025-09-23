@@ -7,8 +7,12 @@ authors = [
     { name = "Lisa Poggel", email = "l.poggel@fu-berlin.de" },
     { name = "Viktor Illmer", email = "v.illmer@fu-berlin.de" }
 ]
-requires-python = ">=3.11"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "limits>=5.5.0",
+    "prefect>=3.4.19",
+    "rdflib>=7.2.1",
+]
 
 [project.scripts]
 canon-curator = "canon_curator:main"
@@ -16,3 +20,11 @@ canon-curator = "canon_curator:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.13.1",
+]
+
+[tool.ruff.lint]
+extend-select = ["B", "UP"]
