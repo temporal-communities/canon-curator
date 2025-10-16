@@ -1,10 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import field
-from canon_curator.models.enrichment import AuthorRecord
-from canon_curator.models.enrichment import GeoRecord
-from canon_curator.models.enrichment import PopularityRecord
-from canon_curator.models.enrichment import ReaderstatRecord
+from canon_curator.models.enrichment import AuthorRecord, GeoRecord, PopularityRecord, ReaderstatRecord
 
 
 @dataclass
