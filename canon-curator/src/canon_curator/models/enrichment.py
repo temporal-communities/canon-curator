@@ -4,7 +4,12 @@ from datetime import datetime
 
 
 @dataclass
-class GeoRecord:
+class EnrichmentRecord:
+    pass
+
+
+@dataclass
+class GeoRecord(EnrichmentRecord):
     geo_uri: str | None = None
     geo_label: str | None = None
     lat: float | None = None
@@ -15,7 +20,7 @@ class GeoRecord:
 
 
 @dataclass
-class AuthorRecord:
+class AuthorRecord(EnrichmentRecord):
     gender_marker: str | None = None
     source: str | None = None
     interpretation_context: str | None = None
@@ -23,14 +28,14 @@ class AuthorRecord:
 
 
 @dataclass
-class PopularityRecord:
+class PopularityRecord(EnrichmentRecord):
     sitelinks_count: int | None = None
     q_rank: int | None = None
     retrieved_at: datetime | None = None
 
 
 @dataclass
-class ReaderstatRecord:
+class ReaderstatRecord(EnrichmentRecord):
     avg_rating: float | None = None
     ratings_count: int | None = None
     source: str | None = None
