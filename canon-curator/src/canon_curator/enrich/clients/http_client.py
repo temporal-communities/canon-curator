@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 import time
+import threading
 
 from limits import strategies, storage, parse
 import requests
@@ -12,6 +13,7 @@ from urllib3.util import Retry
 
 logger = logging.getLogger(__name__)
 
+_tls = threading.local()
 
 def rate_limited[Self, **P, T](func: Callable[Concatenate[Self, P], T]) -> Callable[Concatenate[Self, P], T]:
     """
@@ -45,22 +47,24 @@ def rate_limited[Self, **P, T](func: Callable[Concatenate[Self, P], T]) -> Calla
 
 class HttpClient:
     """
-    HttpClient handles HTTP requests with rate limiting and automatic retries.
+    HttpClient handles HTTP requests with thread-safe rate limiting and automatic retries.
+    Thread safety is achieved through a shared rate limit store across all instances / threads
+    and a thread-local requests.Session. Note that this client is not suitable for multiprocessing.
     Can be used as a context manager.
     """
 
-    def __init__(self, rate_limit: str, client_key: str) -> None:
-        self.session = self._setup_session()
+    # share storage across all instances / threads to allow rate limiting across threads
+    _store = storage.MemoryStorage()
+    _limiter = strategies.MovingWindowRateLimiter(_store)
 
+    def __init__(self, rate_limit: str, client_key: str) -> None:
         # Rate limiter settings
-        self._store = storage.MemoryStorage()
-        self._limiter = strategies.MovingWindowRateLimiter(self._store)
         self._limit = parse(rate_limit)  # returns RateLimitItemPerSecond or RateLimitItemPerHour
         self._key = client_key
 
     @staticmethod
     def _setup_session() -> requests.Session:
-        """Set up an HTTP session with retry logic and default headers."""
+        """Set up a thread local HTTP session with retry logic and default headers."""
         session = requests.Session()
         retries = Retry(
             backoff_factor=0.1,
@@ -71,7 +75,14 @@ class HttpClient:
         )
         session.mount("https://", HTTPAdapter(max_retries=retries))
         user_agent = f"1001 books (https://github.com/temporal-communities/1001-books) requests/{requests.__version__}"
-        session.headers = {"User-Agent": user_agent, "Accept": "*/*"}
+        session.headers.update({"User-Agent": user_agent, "Accept": "*/*"})
+        return session
+
+    def _get_session(self) -> requests.Session:
+        session = getattr(_tls, "session", None)
+        if session is None:
+            session = self._setup_session()
+            _tls.session = session
         return session
 
     @rate_limited
@@ -79,7 +90,7 @@ class HttpClient:
         """Make HTTP request for a url."""
 
         try:
-            response = self.session.get(url, timeout=timeout)
+            response = self._get_session().get(url, timeout=timeout)
             response.raise_for_status()  # Handle HTTP 4xx and 5xx errors after unsuccessful retries
             logger.info(f"Fetched {url} with status code: {response.status_code}")
             return response
@@ -90,8 +101,11 @@ class HttpClient:
         return None
 
     def close(self) -> None:
-        """Close the HTTP session."""
-        self.session.close()
+        """Close the HTTP session of the thread."""
+        session = getattr(_tls, "session", None)
+        if session is not None:
+            session.close()
+            delattr(_tls, "session")
 
     def __enter__(self) -> Self:
         """Enable the HTTP client to be used as a context manager."""
