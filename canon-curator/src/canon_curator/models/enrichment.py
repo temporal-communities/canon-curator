@@ -1,11 +1,13 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from datetime import datetime
 
 
 @dataclass
 class EnrichmentRecord:
-    pass
+    def is_empty(self) -> bool:
+        """Return True if all fields are None."""
+        return all(getattr(self, f.name) is None for f in fields(self))
 
 
 @dataclass
