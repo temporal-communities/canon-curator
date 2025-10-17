@@ -6,8 +6,9 @@ from canon_curator.models.enrichment import AuthorRecord, GeoRecord, PopularityR
 
 @dataclass
 class BaseWorkRecord:
-    list_num: int
-    series_num: int
+    id: int | None = None
+    list_num: int | None = None
+    series_num: int | None = None
     title: str | None = None
     author: str | None = None
     author_qid: str | None = None
