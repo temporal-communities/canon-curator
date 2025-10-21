@@ -5,6 +5,12 @@ from datetime import datetime
 
 @dataclass
 class EnrichmentRecord:
+
+    @classmethod
+    def empty(cls) -> EnrichmentRecord:
+        """Create an empty record with all default values."""
+        return cls()
+
     def is_empty(self) -> bool:
         """Return True if all fields are None."""
         return all(getattr(self, f.name) is None for f in fields(self))
