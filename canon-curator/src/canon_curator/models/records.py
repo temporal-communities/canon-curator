@@ -27,4 +27,4 @@ class EnrichedWorkRecord(BaseWorkRecord):
     authordata: AuthorRecord = field(default_factory=AuthorRecord)
     geodata: GeoRecord = field(default_factory=GeoRecord)
     wd_metrics: PopularityRecord = field(default_factory=PopularityRecord)
-    readerstats: ReaderstatRecord = field(default_factory=ReaderstatsRecord)
+    readerstats: ReaderstatRecord = field(default_factory=ReaderstatRecord)
