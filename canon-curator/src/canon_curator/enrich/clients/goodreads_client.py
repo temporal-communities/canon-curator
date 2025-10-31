@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 
 _HYDRATION_DATA = "#__NEXT_DATA__"
 _PAYLOAD_KEYS = (
-            "averageRating",
-            "ratingsCount",
-            "ratingsCountDist",
-            "textReviewsCount",
-        )
+    "averageRating",
+    "ratingsCount",
+    "ratingsCountDist",
+    "textReviewsCount",
+)
 
 
 class GoodreadsClient:
@@ -34,7 +34,7 @@ class GoodreadsClient:
 
     def __init__(self,
                  name: str = "goodreads",
-                 rate_limit = "1/second",
+                 rate_limit: str = "1/second",
                  goodreads_base: str = "https://www.goodreads.com/",
                  ) -> None:
         self.name = name
