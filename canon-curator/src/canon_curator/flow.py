@@ -7,7 +7,22 @@ def extract():
 
 
 @task()
-def enrich():
+def enrich_geo():
+    pass
+
+
+@task()
+def enrich_author():
+    pass
+
+
+@task()
+def enrich_popularity():
+    pass
+
+
+@task()
+def enrich_readerstats():
     pass
 
 
