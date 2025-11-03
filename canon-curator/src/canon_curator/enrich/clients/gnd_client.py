@@ -62,6 +62,7 @@ class GNDClient:
         if property_name in {GNDProperties.GENDER, GNDProperties.GEOCODE}:
             return {"type": "resource",
                     "uri": entry.get("id"),
+                    "gnd_id": entry.get("gndIdentifier"),
                     "label": entry.get("label")}
         elif property_name == GNDProperties.GEOMETRY:
             geom = entry.get("asWKT", [])
