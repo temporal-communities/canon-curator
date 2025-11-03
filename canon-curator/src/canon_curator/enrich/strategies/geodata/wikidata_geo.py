@@ -5,15 +5,15 @@ from canon_curator.models.records import BaseWorkRecord
 _client = WikidataClient()
 
 
-def wikidata_geo(entity_id: str, property_id: str, client: WikidataClient) -> list[GeoRecord]:
+def _wikidata_geo(entity_id: str, property_id: str, client: WikidataClient) -> list[GeoRecord]:
     return [GeoRecord.empty()]
 
 
 def wikidata_p19(record: BaseWorkRecord) -> list[GeoRecord]:
-    return wikidata_geo(record.author_qid, property_id="P19", client=_client)
+    return _wikidata_geo(record.author_qid, property_id="P19", client=_client)
 
 
 def wikidata_p495(record: BaseWorkRecord) -> list[GeoRecord]:
-    return wikidata_geo(record.work_qid, property_id="P495", client=_client)
+    return _wikidata_geo(record.work_qid, property_id="P495", client=_client)
 
 
