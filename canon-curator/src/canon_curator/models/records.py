@@ -1,14 +1,16 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import field
+from uuid import UUID
+
 from canon_curator.models.enrichment import AuthorRecord, GeoRecord, PopularityRecord, ReaderstatRecord
 
 
 @dataclass
 class BaseWorkRecord:
-    id: int | None = None
-    list_num: int | None = None
-    series_num: int | None = None
+    uuid: UUID | None = None
+    list_num: str | None = None
+    series_num: str | None = None
     title: str | None = None
     author: str | None = None
     author_qid: str | None = None
