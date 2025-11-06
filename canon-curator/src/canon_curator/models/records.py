@@ -16,8 +16,6 @@ class BaseWorkRecord:
     author_gnd_id: str | None = None
     work_gnd_id: str | None = None
     work_goodreads_id: str | None = None
-    first_ed_place: str | None = None
-    first_ed_publisher: str | None = None
     publication_date: str | None = None
 
 
