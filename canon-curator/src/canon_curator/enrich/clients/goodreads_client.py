@@ -79,7 +79,7 @@ class GoodreadsClient:
             logger.warning(
                 f"Could not retrieve featured edition {featured_href} for {goodreads_id}."
             )
-            return dict.fromkeys(_PAYLOAD_KEYS, None)
+            return {**dict.fromkeys(_PAYLOAD_KEYS, None), "featuredUrl": None}
 
         featured_url = urljoin(self.goodreads_base, featured_href)
         featured_page = self._http_client.fetch_page(featured_url)
@@ -93,6 +93,9 @@ class GoodreadsClient:
             logger.warning(
                 f"Could not retrieve readerstats for featured edition {featured_url} of {goodreads_id}."
             )
-            return dict.fromkeys(_PAYLOAD_KEYS, None)
+            return {**dict.fromkeys(_PAYLOAD_KEYS, None), "featuredUrl": featured_url}
 
-        return {k: stats_dict[k] for k in _PAYLOAD_KEYS if k in stats_dict}  # leaky abstraction?
+        return {
+            **{k: stats_dict[k] for k in _PAYLOAD_KEYS if k in stats_dict},
+            "featuredUrl": featured_url,
+        }  # leaky abstraction?
