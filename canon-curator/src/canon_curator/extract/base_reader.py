@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Self
+from collections.abc import Iterable
 
 from canon_curator.models.records import BaseWorkRecord
 
@@ -14,7 +15,7 @@ class BaseReader(ABC):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        self.file.close()
+        self.close()
 
     @abstractmethod
     def open(self) -> None:
@@ -25,5 +26,5 @@ class BaseReader(ABC):
         pass
 
     @abstractmethod
-    def read_file(self) -> BaseWorkRecord:
+    def read_file(self) -> Iterable[BaseWorkRecord]:
         pass
