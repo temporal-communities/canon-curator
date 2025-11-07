@@ -74,7 +74,7 @@ class HttpClient:
             status_forcelist=[500, 502, 503, 504],  # Retries on HTTP status codes (HTTPError)
         )
         session.mount("https://", HTTPAdapter(max_retries=retries))
-        user_agent = f"1001 books (https://github.com/temporal-communities/1001-books) requests/{requests.__version__}"
+        user_agent = f"canon-curator (https://github.com/temporal-communities/canon-curator) requests/{requests.__version__}"
         session.headers.update({"User-Agent": user_agent, "Accept": "*/*"})
         return session
 
