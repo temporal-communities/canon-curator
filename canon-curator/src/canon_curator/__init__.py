@@ -1,2 +1,2 @@
 def main() -> None:
-    print("Hello from canon-curator!")
+	print("Hello from canon-curator!")

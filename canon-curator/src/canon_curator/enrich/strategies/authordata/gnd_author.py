@@ -5,9 +5,9 @@ from canon_curator.models.records import BaseWorkRecord
 
 
 def _gnd_author(resource_id: str, property_name: str) -> list[AuthorRecord]:
-    client = get_gnd_client()
-    return [AuthorRecord.empty()]
+	client = get_gnd_client()
+	return [AuthorRecord.empty()]
 
 
 def gnd_gender(record: BaseWorkRecord) -> list[AuthorRecord]:
-    return _gnd_author(record.author_qid, property_name=GNDProperties.GENDER)
+	return _gnd_author(record.author_qid, property_name=GNDProperties.GENDER)

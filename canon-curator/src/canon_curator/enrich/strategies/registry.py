@@ -15,12 +15,13 @@ type Strategy = Callable[[BaseWorkRecord], Sequence[EnrichmentRecord]]
 
 
 class StrategyRegistry:
-    """Registry of enrichment strategy functions"""
-    WIKIDATA_P21: ClassVar[Strategy] = wikidata_p21
-    GND_GENDER: ClassVar[Strategy] = gnd_gender
-    WIKIDATA_P495: ClassVar[Strategy] = wikidata_p495
-    WIKIDATA_P19: ClassVar[Strategy] = wikidata_p19
-    GND_GEOLABEL: ClassVar[Strategy] = gnd_geolabel
-    GOODREADS: ClassVar[Strategy] = goodreads_readerstats
-    WIKIDATA_SITELINKS: ClassVar[Strategy] = wikidata_sitelinks
-    WIKIDATA_QRANK: ClassVar[Strategy] = wikidata_qrank
+	"""Registry of enrichment strategy functions"""
+
+	WIKIDATA_P21: ClassVar[Strategy] = wikidata_p21
+	GND_GENDER: ClassVar[Strategy] = gnd_gender
+	WIKIDATA_P495: ClassVar[Strategy] = wikidata_p495
+	WIKIDATA_P19: ClassVar[Strategy] = wikidata_p19
+	GND_GEOLABEL: ClassVar[Strategy] = gnd_geolabel
+	GOODREADS: ClassVar[Strategy] = goodreads_readerstats
+	WIKIDATA_SITELINKS: ClassVar[Strategy] = wikidata_sitelinks
+	WIKIDATA_QRANK: ClassVar[Strategy] = wikidata_qrank

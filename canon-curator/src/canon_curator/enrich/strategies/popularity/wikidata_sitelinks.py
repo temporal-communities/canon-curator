@@ -3,4 +3,4 @@ from canon_curator.models.records import BaseWorkRecord
 
 
 def wikidata_sitelinks(record: BaseWorkRecord) -> list[PopularityRecord]:
-    pass
+	pass

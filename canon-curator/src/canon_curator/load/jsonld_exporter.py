@@ -8,47 +8,49 @@ from canon_curator.validate.validate_shacl import validate_shacl
 
 
 class ValidationError(Exception):
-    """Raised when JSON-LD graph fails SHACL validation."""
-    pass
+	"""Raised when JSON-LD graph fails SHACL validation."""
+
+	pass
 
 
 class JSONLDExporter(BaseExporter):
+	@staticmethod
+	def _read_jsonld_context(context_path: str | Path) -> dict:
+		context_str = Path(context_path).read_text(encoding="utf-8")
+		return json.loads(context_str)
 
-    @staticmethod
-    def _read_jsonld_context(context_path: str | Path) -> dict:
-        context_str = Path(context_path).read_text(encoding="utf-8")
-        return json.loads(context_str)
+	def _make_graph(self, records: Sequence[EnrichedWorkRecord], context_path: str | Path) -> dict:
+		context_dict = self._read_jsonld_context(context_path)
 
-    def _make_graph(self, records: Sequence[EnrichedWorkRecord], context_path: str | Path) -> dict:
+		graph_nodes = []
+		for record in records:
+			node = {
+				"@id": str(record.base_data.id)
+				# build the rest of the graph
+			}
+			graph_nodes.append(node)
 
-        context_dict = self._read_jsonld_context(context_path)
+		graph = {"@context": context_dict, "@graph": graph_nodes}
 
-        graph_nodes = []
-        for record in records:
-            node = {
-                "@id": str(record.base_data.id)
-                # build the rest of the graph
-            }
-            graph_nodes.append(node)
+		return graph
 
-        graph = {
-            "@context": context_dict,
-            "@graph": graph_nodes
-        }
+	def export(
+		self,
+		records: Sequence[EnrichedWorkRecord],
+		context_path: str | Path,
+		shapes_path: str | Path,
+		out_dir: str | Path,
+		filename: str = "graph.jsonld",
+	) -> None:
+		"""Build JSON-LD, validate against SHACL, and write to out_dir/filename."""
 
-        return graph
+		graph_obj = self._make_graph(records, context_path)
+		graph_jsonld = json.dumps(graph_obj, ensure_ascii=False, separators=(",", ":"))
 
-    def export(self, records: Sequence[EnrichedWorkRecord], context_path: str | Path, shapes_path: str | Path, out_dir: str | Path, filename: str = "graph.jsonld") -> None:
-        """Build JSON-LD, validate against SHACL, and write to out_dir/filename."""
+		conforms, result_graph, result_text = validate_shacl(graph_jsonld, shapes_path)
 
-        graph_obj = self._make_graph(records, context_path)
-        graph_jsonld = json.dumps(graph_obj, ensure_ascii=False, separators=(",", ":"))
+		if not conforms:
+			raise ValidationError(f"Could not validate graph. Validation report: \n {result_text}")
 
-        conforms, result_graph, result_text = validate_shacl(graph_jsonld, shapes_path)
-
-        if not conforms:
-            raise ValidationError(f"Could not validate graph. Validation report: \n {result_text}")
-
-        out_path = Path(out_dir) / filename
-        out_path.write_text(graph_jsonld, encoding="utf-8")
-
+		out_path = Path(out_dir) / filename
+		out_path.write_text(graph_jsonld, encoding="utf-8")
