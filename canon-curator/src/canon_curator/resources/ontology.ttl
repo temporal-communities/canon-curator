@@ -1,0 +1,103 @@
+# CANON ONTOLOGY
+# Version 1.0 (Beta)
+# 06.11.2025
+
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema:  <http://schema.org/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix lrm:     <http://iflastandards.info/ns/lrm/lrmoo/> .
+@prefix homoit:  <https://homosaurus.org/v4/> .
+@prefix hico:    <http://purl.org/emmedi/hico/2020-03-31> .
+@prefix canon:   <https://github.com/temporal-communities/canon-curator/> .
+@prefix ex:      <http://example.org/> .
+
+
+### CLASSES
+
+canon:Work a rdfs:Class ;
+    rdfs:subClassOf prov:Entity, lrm:Expression ;
+    rdfs:label "Work Record"@en .
+
+canon:CanonList a rdfs:Class ;
+    rdfs:subClassOf prov:Entity , lrm:Expression ;
+    rdfs:label "Canon List"@en .
+
+canon:EnrichmentRecord a rdfs:Class ;
+    rdfs:subClassOf prov:Entity , lrm:Expression ;
+    rdfs:label "Enrichment Record"@en .
+
+canon:GenderRecord rdfs:subClassOf canon:EnrichmentRecord .
+canon:GeoRecord rdfs:subClassOf canon:EnrichmentRecord .
+
+canon:Author a rdfs:Class ;
+    rdfs:subClassOf prov:Person, schema:Person ; # prov:Agent, schema:Person # does it make sense to inherit from both?
+    rdfs:label "Author"@en .
+
+
+### PROPERTIES
+
+
+canon:hasEnrichment a rdf:Property ;
+    rdfs:label "has enrichment"@en ;
+    rdfs:domain canon:Work, canon:Author ; # option a) make this rdfs:Resource: has to be more permissive to avoid false rdfs reasoning that quoted triple is canon:Work; option b) remove hasEnrichment property from Work and use it only for quoted triples; option c) introduce another property just for quoted triples
+    rdfs:range canon:EnrichmentRecord .
+
+canon:geolocation a rdf:Property ;
+    rdfs:label "Geolocation"@en ;
+    rdfs:domain canon:Work, canon:Author ; # or set domain in subproperties??
+    rdfs:range schema:Place ; # previously schema:GeoCoordinates. Change range,or enforce this to expect just a URI in SHACL. Or make it schema:Place ?
+    rdfs:subPropertyOf schema:location . # does it make sense to add this? It only makes sense when range is schema:Place because schema:location expects schema:Place
+
+canon:authorGeolocation a rdf:Property ; # Wikidata P19; should this property have domain canon:Author instead of canon:Work??
+    rdfs:label "Geolocation related to author, f.e. Wikidata P19"@en ; # this should go in description
+    rdfs:subPropertyOf canon:geolocation .
+
+canon:authorBirthPlace a rdf:Property ;
+    rdfs:label "Place of birth of author, f.e. Wikidata P19"@en ; # this should go in description
+    rdfs:subPropertyOf canon:authorGeolocation ;
+    schema:equal <https://www.wikidata.org/wiki/Property:P19> . # schema:equal correct here?
+
+canon:workGeolocation a rdf:Property ; # Wikidata P495
+    rdfs:label "Geolocation related to work, f.e. Wikidata P495"@en ; # this should go in description
+    rdfs:subPropertyOf canon:geolocation .
+
+canon:workOrigin a rdf:Property ;
+    rdfs:label "Place of origin of the work, f.e. Wikidata P495"@en ; # this should go in description
+    rdfs:subPropertyOf canon:workGeolocation ;
+    schema:equal <https://www.wikidata.org/wiki/Property:P495> . # schema:equal correct here?
+
+canon:languageGeolocation a rdf:Property ;
+    rdfs:label "Geolocation based on language of text or author"@en ;
+    rdfs:subPropertyOf canon:geolocation .
+
+canon:authorLanguage a rdf:Property ;
+    rdfs:label "Language attributed to the author"@en ;
+    rdfs:subPropertyOf canon:languageGeolocation, canon:authorGeolocation . # is this a good idea?
+
+canon:workLanguage a rdf:Property ;
+    rdfs:label "Language attributed to the text"@en ;
+    rdfs:subPropertyOf canon:languageGeolocation, canon:workGeolocation . # is this a good idea?
+
+canon:assumedGeolocation a rdf:Property ;
+    rdfs:label "Assumed geolocation with unclear provenance"@en ;
+    rdfs:subPropertyOf canon:geolocation .
+
+canon:gender a rdf:Property ;
+    rdfs:label "Gender"@en ;
+    rdfs:domain canon:Author ;
+    rdfs:range homoit:Gender .
+
+canon:assumedGender a rdf:Property ;
+    rdfs:label "Assumed Gender"@en ;
+    rdfs:subPropertyOf canon:gender .
+
+canon:recordedGender a rdf:Property ;
+    rdfs:label "Recorded Gender"@en ;
+    rdfs:subPropertyOf canon:gender .
+
+canon:selfIdentifiedGender a rdf:Property ;
+    rdfs:label "Self-identified Gender"@en ;
+    rdfs:subPropertyOf canon:gender .
+
