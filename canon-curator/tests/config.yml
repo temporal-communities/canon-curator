@@ -1,0 +1,23 @@
+geodata:
+  chain: first-success
+  strategies:
+    - wikidata_p495
+    - gnd_geolabel
+    - wikidata_p19
+
+authordata:
+  chain: first-success
+  strategies:
+    - gnd_gender
+    - wikidata_p21
+
+readerstats:
+  chain: first-success
+  strategies:
+    - goodreads
+
+popularity:
+  chain: first-success
+  strategies:
+    - wikidata_sitelinks
+    - wikidata_qrank
