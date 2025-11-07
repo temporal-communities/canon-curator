@@ -6,6 +6,7 @@ from uuid import UUID
 
 @dataclass
 class EnrichmentRecord:
+    rec_uuid: UUID | None = None
 
     @classmethod
     def empty(cls) -> EnrichmentRecord:
@@ -19,7 +20,6 @@ class EnrichmentRecord:
 
 @dataclass
 class GeoRecord(EnrichmentRecord):
-    rec_uuid: UUID | None = None
     ext_id: str | None = None
     geo_uri: str | None = None
     geo_label: str | None = None
@@ -32,7 +32,6 @@ class GeoRecord(EnrichmentRecord):
 
 @dataclass
 class AuthorRecord(EnrichmentRecord):
-    rec_uuid: UUID | None = None
     gender_marker: str | None = None
     source: str | None = None
     interpretation_context: str | None = None
@@ -41,7 +40,6 @@ class AuthorRecord(EnrichmentRecord):
 
 @dataclass
 class PopularityRecord(EnrichmentRecord):
-    rec_uuid: UUID | None = None
     sitelinks_count: int | None = None
     q_rank: int | None = None
     retrieved_at: datetime | None = None
@@ -49,7 +47,6 @@ class PopularityRecord(EnrichmentRecord):
 
 @dataclass
 class ReaderstatRecord(EnrichmentRecord):
-    rec_uuid: UUID | None = None
     avg_rating: float | None = None
     ratings_count: int | None = None
     source: str | None = None
