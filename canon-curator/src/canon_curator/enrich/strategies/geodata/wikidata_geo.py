@@ -1,6 +1,5 @@
 from canon_curator.enrich.strategies.providers import get_wikidata_client
-from canon_curator.models.enrichment import GeoRecord
-from canon_curator.models.records import BaseWorkRecord
+from canon_curator.models import GeoRecord, BaseWorkRecord
 
 
 def _wikidata_geo(entity_id: str, property_id: str) -> list[GeoRecord]:

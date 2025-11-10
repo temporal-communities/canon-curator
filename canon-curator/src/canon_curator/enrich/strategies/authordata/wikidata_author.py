@@ -1,6 +1,5 @@
 from canon_curator.enrich.strategies.providers import get_wikidata_client
-from canon_curator.models.enrichment import AuthorRecord
-from canon_curator.models.records import BaseWorkRecord
+from canon_curator.models import AuthorRecord, BaseWorkRecord
 
 
 def _wikidata_author(entity_id: str, property_id: str) -> list[AuthorRecord]:

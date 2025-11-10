@@ -1,5 +1,4 @@
-from canon_curator.models.enrichment import PopularityRecord
-from canon_curator.models.records import BaseWorkRecord
+from canon_curator.models import PopularityRecord, BaseWorkRecord
 
 
 def wikidata_qrank(record: BaseWorkRecord) -> list[PopularityRecord]:

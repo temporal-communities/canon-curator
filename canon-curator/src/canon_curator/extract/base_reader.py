@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Self
 from collections.abc import Iterable
 
-from canon_curator.models.records import BaseWorkRecord
+from canon_curator.models import BaseWorkRecord
 
 
 class BaseReader(ABC):

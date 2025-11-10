@@ -2,7 +2,7 @@ import logging
 import pywikibot  # type:ignore
 from pywikibot.page._collections import ClaimCollection
 from functools import cached_property
-from typing import Iterable
+from collections.abc import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,9 @@ class WikidataClient:
 
 	def _fetch_claims(
 		self, property_id: str, entity_id: str
-	) -> ClaimCollection | None:  # list of pywikibot.page._wikibase.Claim; return Iterable[pywikibot.Claim] instead? ;  oder: fetch_property; returns pywikibot.page._collections.ClaimCollection
+	) -> (
+		ClaimCollection | None
+	):  # list of pywikibot.page._wikibase.Claim; return Iterable[pywikibot.Claim] instead? ;  oder: fetch_property; returns pywikibot.page._collections.ClaimCollection
 		"""Fetch claims for the specified property of a Wikidata entity."""
 
 		logger.info(f"Fetching {property_id} for {entity_id}")

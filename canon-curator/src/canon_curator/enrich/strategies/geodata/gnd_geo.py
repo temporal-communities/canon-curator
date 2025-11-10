@@ -1,7 +1,6 @@
 from canon_curator.enrich.strategies.providers import get_gnd_client
 from canon_curator.enrich.clients.gnd_client import GNDProperties
-from canon_curator.models.enrichment import GeoRecord
-from canon_curator.models.records import BaseWorkRecord
+from canon_curator.models import GeoRecord, BaseWorkRecord
 
 
 def _gnd_geo(resource_id: str, property_name: str) -> list[GeoRecord]:

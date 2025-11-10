@@ -1,15 +1,11 @@
 from typing import ClassVar
 from collections.abc import Callable, Sequence
 
-from canon_curator.models.records import BaseWorkRecord
-from canon_curator.models.enrichment import EnrichmentRecord
-from canon_curator.enrich.strategies.authordata.wikidata_author import wikidata_p21
-from canon_curator.enrich.strategies.geodata.wikidata_geo import wikidata_p19, wikidata_p495
-from canon_curator.enrich.strategies.authordata.gnd_author import gnd_gender
-from canon_curator.enrich.strategies.geodata.gnd_geo import gnd_geolabel
-from canon_curator.enrich.strategies.popularity.wikidata_sitelinks import wikidata_sitelinks
-from canon_curator.enrich.strategies.popularity.wikidata_qrank import wikidata_qrank
-from canon_curator.enrich.strategies.readerstats.goodreads import goodreads_readerstats
+from canon_curator.models import BaseWorkRecord, EnrichmentRecord
+from canon_curator.enrich.strategies.authordata import wikidata_p21, gnd_gender
+from canon_curator.enrich.strategies.geodata import wikidata_p19, wikidata_p495, gnd_geolabel
+from canon_curator.enrich.strategies.popularity import wikidata_sitelinks, wikidata_qrank
+from canon_curator.enrich.strategies.readerstats import goodreads_readerstats
 
 type Strategy = Callable[[BaseWorkRecord], Sequence[EnrichmentRecord]]
 

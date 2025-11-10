@@ -3,8 +3,8 @@ import uuid
 from typing import TextIO
 from collections.abc import Iterable
 
-from canon_curator.extract.base_reader import BaseReader
-from canon_curator.models.records import BaseWorkRecord
+from canon_curator.extract import BaseReader
+from canon_curator.models import BaseWorkRecord
 
 
 class CSVReader(BaseReader):

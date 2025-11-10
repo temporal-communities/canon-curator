@@ -2,8 +2,8 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Sequence
 
 from canon_curator.enrich.strategies.registry import StrategyRegistry
-from canon_curator.models.records import BaseWorkRecord
-from canon_curator.models.enrichment import (
+from canon_curator.models import (
+	BaseWorkRecord,
 	EnrichmentRecord,
 	GeoRecord,
 	AuthorRecord,

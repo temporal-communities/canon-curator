@@ -1,7 +1,8 @@
 from collections.abc import Iterable
 
-from canon_curator.models.records import BaseWorkRecord, EnrichedWorkRecord
-from canon_curator.models.enrichment import (
+from canon_curator.models import (
+	BaseWorkRecord,
+	EnrichedWorkRecord,
 	EnrichmentRecord,
 	GeoRecord,
 	AuthorRecord,

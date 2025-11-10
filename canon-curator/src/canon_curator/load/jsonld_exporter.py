@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 from collections.abc import Sequence
 
-from canon_curator.models.records import EnrichedWorkRecord
-from canon_curator.load.base_exporter import BaseExporter
-from canon_curator.validate.validate_shacl import validate_shacl
+from canon_curator.models import EnrichedWorkRecord
+from canon_curator.load import BaseExporter
+from canon_curator.validate import validate_shacl
 
 
 class ValidationError(Exception):

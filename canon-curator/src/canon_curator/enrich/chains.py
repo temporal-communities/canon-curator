@@ -2,8 +2,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from abc import ABC, abstractmethod
 
-from canon_curator.models.enrichment import EnrichmentRecord
-from canon_curator.models.records import BaseWorkRecord
+from canon_curator.models import EnrichmentRecord, BaseWorkRecord
 
 type Strategy = Callable[[BaseWorkRecord], Sequence[EnrichmentRecord]]
 

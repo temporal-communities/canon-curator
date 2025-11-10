@@ -7,8 +7,7 @@ from canon_curator.enrich.enrichers import (
 	ReaderstatEnricher,
 	PopularityEnricher,
 )
-from canon_curator.models.records import BaseWorkRecord
-from canon_curator.models.enrichment import EnrichmentRecord
+from canon_curator.models import EnrichmentRecord, BaseWorkRecord
 from canon_curator.enrich.strategies.registry import StrategyRegistry
 
 type Strategy = Callable[[BaseWorkRecord], Sequence[EnrichmentRecord]]

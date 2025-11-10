@@ -1,6 +1,5 @@
 from canon_curator.enrich.strategies.providers import get_goodreads_client
-from canon_curator.models.enrichment import ReaderstatRecord
-from canon_curator.models.records import BaseWorkRecord
+from canon_curator.models import ReaderstatRecord, BaseWorkRecord
 
 
 def _goodreads(goodreads_id: str) -> list[ReaderstatRecord]:
