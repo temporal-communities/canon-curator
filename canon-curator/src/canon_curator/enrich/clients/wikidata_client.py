@@ -1,6 +1,8 @@
 import logging
 import pywikibot  # type:ignore
+from pywikibot.page._collections import ClaimCollection
 from functools import cached_property
+from typing import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +18,7 @@ class WikidataClient:
 
 	# cached_property for thread safety, lazy instantiation: instantiate on first call
 	@cached_property
-	def _site(self) -> pywikibot.site.APISite:
+	def _site(self) -> pywikibot.site.BaseSite:
 		return pywikibot.Site("wikidata", "wikidata")
 
 	@cached_property
@@ -25,8 +27,8 @@ class WikidataClient:
 
 	@staticmethod
 	def _filter_accepted_claims(
-		claim_collection: pywikibot.ClaimCollection,
-	) -> pywikibot.ClaimCollection:
+		claim_collection: ClaimCollection,
+	) -> Iterable[pywikibot.Claim]:
 		return [claim for claim in claim_collection if claim.rank != "deprecated"]
 
 	@staticmethod
@@ -85,7 +87,7 @@ class WikidataClient:
 
 	def _fetch_claims(
 		self, property_id: str, entity_id: str
-	) -> pywikibot.ClaimCollection:  # list of pywikibot.page._wikibase.Claim; return Iterable[pywikibot.Claim] instead? ;  oder: fetch_property; returns pywikibot.page._collections.ClaimCollection
+	) -> ClaimCollection | None:  # list of pywikibot.page._wikibase.Claim; return Iterable[pywikibot.Claim] instead? ;  oder: fetch_property; returns pywikibot.page._collections.ClaimCollection
 		"""Fetch claims for the specified property of a Wikidata entity."""
 
 		logger.info(f"Fetching {property_id} for {entity_id}")
