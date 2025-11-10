@@ -29,9 +29,10 @@ class BaseEnricher:
 	def _validate(self):
 		for strategy in self.chain.strategies:
 			if strategy not in self.ALLOWED_STRATEGIES:
+				allowed_names = {s.__name__ for s in self.ALLOWED_STRATEGIES}
 				raise ValueError(
-					f"{strategy} is not a valid strategy for {self.__class__.__name__}. "
-					f"Allowed: {self.ALLOWED_STRATEGIES}"
+					f"{strategy.__name__} is not a valid strategy for {self.__class__.__name__}. "
+					f"Allowed: {', '.join(allowed_names)}"
 				)
 
 	def enrich(
