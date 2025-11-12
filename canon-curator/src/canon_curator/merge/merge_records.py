@@ -1,13 +1,13 @@
 from collections.abc import Iterable
 
 from canon_curator.models import (
-    BaseWorkRecord,
-    EnrichedWorkRecord,
-    EnrichmentRecord,
-    GeoRecord,
-    AuthorRecord,
-    PopularityRecord,
-    ReaderstatsRecord,
+	BaseWorkRecord,
+	EnrichedWorkRecord,
+	EnrichmentRecord,
+	GeoRecord,
+	AuthorRecord,
+	PopularityRecord,
+	ReaderstatsRecord,
 )
 
 

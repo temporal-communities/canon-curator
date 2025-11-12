@@ -94,7 +94,9 @@ class GoodreadsClient:
 		featured_soup = (
 			BeautifulSoup(featured_page.content, "html.parser") if featured_page else None
 		)
-		hydration_elem = featured_soup.select_one(_HYDRATION_DATA_SELECTOR) if featured_soup else None
+		hydration_elem = (
+			featured_soup.select_one(_HYDRATION_DATA_SELECTOR) if featured_soup else None
+		)
 		hydration_str = hydration_elem.text if hydration_elem else None
 		hydration_dict = json.loads(hydration_str) if hydration_str else None
 		stats_dict = (

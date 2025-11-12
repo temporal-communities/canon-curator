@@ -4,10 +4,10 @@ from dataclasses import field
 from uuid import UUID
 
 from canon_curator.models.enrichment import (
-    AuthorRecord,
-    GeoRecord,
-    PopularityRecord,
-    ReaderstatsRecord,
+	AuthorRecord,
+	GeoRecord,
+	PopularityRecord,
+	ReaderstatsRecord,
 )
 
 

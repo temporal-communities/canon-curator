@@ -6,7 +6,6 @@ from canon_curator.models.records import EnrichedWorkRecord
 
 
 class BaseExporter(ABC):
-
 	@abstractmethod
 	def export(
 		self,

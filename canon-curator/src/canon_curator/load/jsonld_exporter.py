@@ -14,7 +14,6 @@ class ValidationError(Exception):
 
 
 class JSONLDExporter(BaseExporter):
-
 	def __init__(self, context_path: str | Path, shapes_path: str | Path) -> None:
 		self.context_path = context_path
 		self.shapes_path = shapes_path

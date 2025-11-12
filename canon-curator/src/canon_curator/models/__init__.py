@@ -1,9 +1,9 @@
 from .enrichment import (
-    EnrichmentRecord,
-    GeoRecord,
-    AuthorRecord,
-    PopularityRecord,
-    ReaderstatsRecord,
+	EnrichmentRecord,
+	GeoRecord,
+	AuthorRecord,
+	PopularityRecord,
+	ReaderstatsRecord,
 )
 from .records import BaseWorkRecord, EnrichedWorkRecord
 
@@ -12,7 +12,7 @@ __all__ = [
 	"GeoRecord",
 	"AuthorRecord",
 	"PopularityRecord",
-    "ReaderstatsRecord",
+	"ReaderstatsRecord",
 	"BaseWorkRecord",
 	"EnrichedWorkRecord",
 ]
