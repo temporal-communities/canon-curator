@@ -61,12 +61,12 @@ class GoodreadsClient:
 		"""Create and return a new HttpClient instance with rate limiting on first access."""
 		return HttpClient(self.rate_limit, self.name)
 
-	def _get_editions(self, goodreads_id: str) -> requests.Response | None:
+	def _fetch_editions_page(self, goodreads_id: str) -> requests.Response | None:
 		edition_url = urljoin(self.goodreads_base, f"work/editions/{goodreads_id}")
 		return self._http_client.fetch_page(edition_url)
 
-	def _get_featured(self, goodreads_id: str) -> str | None:
-		editions_page = self._get_editions(goodreads_id)
+	def _get_featured_path(self, goodreads_id: str) -> str | None:
+		editions_page = self._fetch_editions_page(goodreads_id)
 		editions_soup = (
 			BeautifulSoup(editions_page.content, "html.parser") if editions_page else None
 		)
@@ -81,7 +81,7 @@ class GoodreadsClient:
 
 	def fetch_readerstats(self, goodreads_id: str) -> dict:
 		"""Fetch and parse reader statistics from Goodreads hydration data."""
-		featured_href = self._get_featured(goodreads_id)
+		featured_href = self._get_featured_path(goodreads_id)
 
 		if not featured_href:
 			logger.warning(
