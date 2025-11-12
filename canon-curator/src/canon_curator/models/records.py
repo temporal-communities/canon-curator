@@ -4,10 +4,10 @@ from dataclasses import field
 from uuid import UUID
 
 from canon_curator.models.enrichment import (
-	AuthorRecord,
-	GeoRecord,
-	PopularityRecord,
-	ReaderstatRecord,
+    AuthorRecord,
+    GeoRecord,
+    PopularityRecord,
+    ReaderstatsRecord,
 )
 
 
@@ -32,4 +32,4 @@ class EnrichedWorkRecord(BaseWorkRecord):
 	authordata: AuthorRecord = field(default_factory=AuthorRecord)
 	geodata: GeoRecord = field(default_factory=GeoRecord)
 	wd_metrics: PopularityRecord = field(default_factory=PopularityRecord)
-	readerstats: ReaderstatRecord = field(default_factory=ReaderstatRecord)
+	readerstats: ReaderstatsRecord = field(default_factory=ReaderstatsRecord)

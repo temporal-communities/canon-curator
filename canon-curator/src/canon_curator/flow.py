@@ -7,7 +7,7 @@ from canon_curator.models import (
 	GeoRecord,
 	AuthorRecord,
 	PopularityRecord,
-	ReaderstatRecord,
+	ReaderstatsRecord,
 )
 
 
@@ -36,7 +36,7 @@ def enrich_popularity() -> Iterable[PopularityRecord]:
 
 
 @task()
-def enrich_readerstats() -> Iterable[ReaderstatRecord]:
+def enrich_readerstats() -> Iterable[ReaderstatsRecord]:
 	"""Retrieve reader statistics for BaseWorkRecords."""
 	raise NotImplementedError
 

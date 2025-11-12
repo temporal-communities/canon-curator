@@ -1,18 +1,18 @@
 from collections.abc import Iterable
 
 from canon_curator.models import (
-	BaseWorkRecord,
-	EnrichedWorkRecord,
-	EnrichmentRecord,
-	GeoRecord,
-	AuthorRecord,
-	PopularityRecord,
-	ReaderstatRecord,
+    BaseWorkRecord,
+    EnrichedWorkRecord,
+    EnrichmentRecord,
+    GeoRecord,
+    AuthorRecord,
+    PopularityRecord,
+    ReaderstatsRecord,
 )
 
 
 def _make_index(records: Iterable[EnrichmentRecord]) -> dict:
-	return {rec.rec_uuid: rec for rec in records}
+	return {rec.work_uuid: rec for rec in records}
 
 
 def merge_records(
@@ -20,7 +20,7 @@ def merge_records(
 	geo_recs: Iterable[GeoRecord],
 	author_recs: Iterable[AuthorRecord],
 	popularity_recs: Iterable[PopularityRecord],
-	readerstat_recs: Iterable[ReaderstatRecord],
+	readerstat_recs: Iterable[ReaderstatsRecord],
 ) -> Iterable[EnrichedWorkRecord]:
 	"""Merge BaseWorkRecords with enrichment data, using dataclass defaults for missing fields."""
 
@@ -38,7 +38,7 @@ def merge_records(
 				geodata=geo_index.get(uid, GeoRecord()),
 				authordata=author_index.get(uid, AuthorRecord()),
 				wd_metrics=popularity_index.get(uid, PopularityRecord()),
-				readerstats=readerstat_index.get(uid, ReaderstatRecord()),
+				readerstats=readerstat_index.get(uid, ReaderstatsRecord()),
 			)
 		)
 

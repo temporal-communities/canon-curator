@@ -46,7 +46,7 @@ class PopularityRecord(EnrichmentRecord):
 
 
 @dataclass
-class ReaderstatRecord(EnrichmentRecord):
+class ReaderstatsRecord(EnrichmentRecord):
 	avg_rating: float | None = None
 	ratings_count: int | None = None
 	source: str | None = None

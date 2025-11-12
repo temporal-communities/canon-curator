@@ -9,7 +9,7 @@ from canon_curator.models import (
 	GeoRecord,
 	AuthorRecord,
 	PopularityRecord,
-	ReaderstatRecord,
+	ReaderstatsRecord,
 )
 from canon_curator.enrich.chains import StrategyChain
 
@@ -80,9 +80,9 @@ class PopularityEnricher(BaseEnricher[PopularityRecord]):
 		super().__init__(chain)
 
 
-class ReaderstatEnricher(BaseEnricher[ReaderstatRecord]):
+class ReaderstatEnricher(BaseEnricher[ReaderstatsRecord]):
 	name = "readerstats"
-	ALLOWED_STRATEGIES: tuple[Strategy[ReaderstatRecord], ...] = (StrategyRegistry.GOODREADS,)
+	ALLOWED_STRATEGIES: tuple[Strategy[ReaderstatsRecord], ...] = (StrategyRegistry.GOODREADS,)
 
 	def __init__(self, chain: StrategyChain):
 		super().__init__(chain)

@@ -7,7 +7,7 @@ from canon_curator.models import (
 	GeoRecord,
 	AuthorRecord,
 	PopularityRecord,
-	ReaderstatRecord,
+	ReaderstatsRecord,
 )
 from canon_curator.enrich.strategies.authordata import wikidata_p21, gnd_gender
 from canon_curator.enrich.strategies.geodata import wikidata_p19, wikidata_p495, gnd_geolabel
@@ -25,6 +25,6 @@ class StrategyRegistry:
 	WIKIDATA_P495: ClassVar[Strategy[GeoRecord]] = wikidata_p495
 	WIKIDATA_P19: ClassVar[Strategy[GeoRecord]] = wikidata_p19
 	GND_GEOLABEL: ClassVar[Strategy[GeoRecord]] = gnd_geolabel
-	GOODREADS: ClassVar[Strategy[ReaderstatRecord]] = goodreads_readerstats
+	GOODREADS: ClassVar[Strategy[ReaderstatsRecord]] = goodreads_readerstats
 	WIKIDATA_SITELINKS: ClassVar[Strategy[PopularityRecord]] = wikidata_sitelinks
 	WIKIDATA_QRANK: ClassVar[Strategy[PopularityRecord]] = wikidata_qrank
