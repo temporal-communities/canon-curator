@@ -1,7 +1,8 @@
 from __future__ import annotations
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from uuid import UUID
 
-from canon_curator.enrich.strategies.registry import StrategyRegistry
+from canon_curator.enrich.strategies.registry import Strategy, StrategyRegistry
 from canon_curator.models import (
 	BaseWorkRecord,
 	EnrichmentRecord,
@@ -13,20 +14,20 @@ from canon_curator.models import (
 from canon_curator.enrich.chains import StrategyChain
 
 
-class BaseEnricher:
+class BaseEnricher[T: EnrichmentRecord]:
 	"""
 	Runs a given enrichment strategy chain and returns enrichment records for a list of BaseWorkRecords keyed by record id.
 	Validates if provided strategies are allowed.
 	"""
 
 	name: str = "base"
-	ALLOWED_STRATEGIES: tuple[Callable[[BaseWorkRecord], Sequence[EnrichmentRecord]], ...] = ()
+	ALLOWED_STRATEGIES: tuple[Strategy[T], ...] = ()
 
 	def __init__(self, chain: StrategyChain):
 		self.chain = chain
 		self._validate()
 
-	def _validate(self):
+	def _validate(self) -> None:
 		for strategy in self.chain.strategies:
 			if strategy not in self.ALLOWED_STRATEGIES:
 				allowed_names = {s.__name__ for s in self.ALLOWED_STRATEGIES}
@@ -37,17 +38,17 @@ class BaseEnricher:
 
 	def enrich(
 		self, records: Iterable[BaseWorkRecord]
-	) -> dict[int | None, Sequence[EnrichmentRecord]]:
+	) -> dict[UUID | None, Sequence[EnrichmentRecord]]:
 		"""Applies the strategy chain to each record and collect results."""
-		enrichment_recs: dict[int | None, Sequence[EnrichmentRecord]] = {}
+		enrichment_recs: dict[UUID | None, Sequence[EnrichmentRecord]] = {}
 		for rec in records:
-			enrichment_recs[rec.id] = self.chain.run(rec)
+			enrichment_recs[rec.uuid] = self.chain.run(rec)
 		return enrichment_recs
 
 
-class GeodataEnricher(BaseEnricher):
+class GeodataEnricher(BaseEnricher[GeoRecord]):
 	name = "geodata"
-	ALLOWED_STRATEGIES: tuple[Callable[[BaseWorkRecord], Sequence[GeoRecord]], ...] = (
+	ALLOWED_STRATEGIES: tuple[Strategy[GeoRecord], ...] = (
 		StrategyRegistry.GND_GEOLABEL,
 		StrategyRegistry.WIKIDATA_P19,
 		StrategyRegistry.WIKIDATA_P495,
@@ -57,9 +58,9 @@ class GeodataEnricher(BaseEnricher):
 		super().__init__(chain)
 
 
-class AuthordataEnricher(BaseEnricher):
+class AuthordataEnricher(BaseEnricher[AuthorRecord]):
 	name = "authordata"
-	ALLOWED_STRATEGIES: tuple[Callable[[BaseWorkRecord], Sequence[AuthorRecord]], ...] = (
+	ALLOWED_STRATEGIES: tuple[Strategy[AuthorRecord], ...] = (
 		StrategyRegistry.GND_GENDER,
 		StrategyRegistry.WIKIDATA_P21,
 	)
@@ -68,9 +69,9 @@ class AuthordataEnricher(BaseEnricher):
 		super().__init__(chain)
 
 
-class PopularityEnricher(BaseEnricher):
+class PopularityEnricher(BaseEnricher[PopularityRecord]):
 	name = "popularity"
-	ALLOWED_STRATEGIES: tuple[Callable[[BaseWorkRecord], Sequence[PopularityRecord]], ...] = (
+	ALLOWED_STRATEGIES: tuple[Strategy[PopularityRecord], ...] = (
 		StrategyRegistry.WIKIDATA_SITELINKS,
 		StrategyRegistry.WIKIDATA_QRANK,
 	)
@@ -79,11 +80,9 @@ class PopularityEnricher(BaseEnricher):
 		super().__init__(chain)
 
 
-class ReaderstatEnricher(BaseEnricher):
+class ReaderstatEnricher(BaseEnricher[ReaderstatRecord]):
 	name = "readerstats"
-	ALLOWED_STRATEGIES: tuple[Callable[[BaseWorkRecord], Sequence[ReaderstatRecord]], ...] = (
-		StrategyRegistry.GOODREADS,
-	)
+	ALLOWED_STRATEGIES: tuple[Strategy[ReaderstatRecord], ...] = (StrategyRegistry.GOODREADS,)
 
 	def __init__(self, chain: StrategyChain):
 		super().__init__(chain)
