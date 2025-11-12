@@ -1,0 +1,46 @@
+[project]
+name = "canon-curator"
+version = "0.1.0"
+description = "A modular ETL workflow to enrich literary canons with metadata and metrics"
+readme = "README.md"
+authors = [
+    { name = "Lisa Poggel", email = "l.poggel@fu-berlin.de" },
+    { name = "Viktor Illmer", email = "v.illmer@fu-berlin.de" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.2",
+    "jsonpath-ng>=1.7.0",
+    "limits>=5.5.0",
+    "polars>=1.34.0",
+    "prefect>=3.4.19",
+    "pyshacl>=0.30.1",
+    "pywikibot>=10.7.0",
+    "rdflib>=7.2.1",
+    "shapely>=2.1.2",
+]
+
+[project.scripts]
+canon-curator = "canon_curator.flow:enrichment_pipeline"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "pyright>=1.1.406",
+    "pytest>=9.0.0",
+    "ruff>=0.13.1",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+
+[tool.ruff.lint]
+extend-select = ["B", "UP"]
