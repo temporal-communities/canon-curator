@@ -6,6 +6,7 @@ from rdflib import Graph
 from functools import cached_property
 from shapely import wkt
 from shapely.geometry import Point
+from urllib.parse import urljoin
 
 from canon_curator.enrich.clients.http_client import HttpClient
 
@@ -96,7 +97,7 @@ class GNDClient:
 		Requests to the JSON-API return JSON-LD: https://lobid.org/gnd/api#jsonld;
 		the context file can be found at: /gnd/context.jsonld
 		"""
-		url = f"{self.lobid_base}{resource_id}.json"
+		url = urljoin(self.lobid_base, f"{resource_id}.json")
 		logger.info(f"Fetching resource from {url}")
 		response = self._http_client.fetch_page(url)
 		if not response:
