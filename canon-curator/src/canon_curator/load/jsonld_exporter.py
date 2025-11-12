@@ -14,18 +14,22 @@ class ValidationError(Exception):
 
 
 class JSONLDExporter(BaseExporter):
-	@staticmethod
-	def _read_jsonld_context(context_path: str | Path) -> dict:
-		context_str = Path(context_path).read_text(encoding="utf-8")
+
+	def __init__(self, context_path: str | Path, shapes_path: str | Path) -> None:
+		self.context_path = context_path
+		self.shapes_path = shapes_path
+
+	def _read_jsonld_context(self) -> dict:
+		context_str = Path(self.context_path).read_text(encoding="utf-8")
 		return json.loads(context_str)
 
-	def _make_graph(self, records: Sequence[EnrichedWorkRecord], context_path: str | Path) -> dict:
-		context_dict = self._read_jsonld_context(context_path)
+	def _make_graph(self, records: Sequence[EnrichedWorkRecord]) -> dict:
+		context_dict = self._read_jsonld_context()
 
 		graph_nodes = []
 		for record in records:
 			node = {
-				"@id": str(record.base_data.id)
+				"@id": str(record.base_data.uuid)
 				# build the rest of the graph
 			}
 			graph_nodes.append(node)
@@ -37,17 +41,15 @@ class JSONLDExporter(BaseExporter):
 	def export(
 		self,
 		records: Sequence[EnrichedWorkRecord],
-		context_path: str | Path,
-		shapes_path: str | Path,
 		out_dir: str | Path,
 		filename: str = "graph.jsonld",
 	) -> None:
 		"""Build JSON-LD, validate against SHACL, and write to out_dir/filename."""
 
-		graph_obj = self._make_graph(records, context_path)
+		graph_obj = self._make_graph(records)
 		graph_jsonld = json.dumps(graph_obj, ensure_ascii=False, separators=(",", ":"))
 
-		conforms, result_graph, result_text = validate_shacl(graph_jsonld, shapes_path)
+		conforms, result_graph, result_text = validate_shacl(graph_jsonld, self.shapes_path)
 
 		if not conforms:
 			raise ValidationError(f"Could not validate graph. Validation report: \n {result_text}")
