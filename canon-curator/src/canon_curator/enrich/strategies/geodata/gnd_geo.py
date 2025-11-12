@@ -17,6 +17,7 @@ def gnd_geolabel(record: BaseWorkRecord) -> list[GeoRecord]:
 		coords_rec = _gnd_geo(label_rec.ext_id, property_name=GNDProperties.GEOMETRY)
 		geo_recs.append(
 			GeoRecord(
+				work_uuid=record.uuid,
 				ext_id=label_rec.ext_id,
 				geo_uri=label_rec.geo_uri,
 				geo_label=label_rec.geo_label,

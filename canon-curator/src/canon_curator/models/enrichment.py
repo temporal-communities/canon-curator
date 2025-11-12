@@ -6,7 +6,7 @@ from uuid import UUID
 
 @dataclass
 class EnrichmentRecord:
-	rec_uuid: UUID | None = None
+	work_uuid: UUID | None = None
 
 	@classmethod
 	def empty(cls) -> EnrichmentRecord:
