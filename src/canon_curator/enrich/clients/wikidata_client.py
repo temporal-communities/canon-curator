@@ -136,3 +136,8 @@ class WikidataClient:
 			"lang": lang,
 			"claims": processed_claims,
 		}
+
+	def fetch_sitelinks(self, entity_id: str) -> int:
+		item = self._fetch_item_page(entity_id)
+		sitelinks = list(item.iterlinks("wikipedia"))
+		return len(sitelinks)
