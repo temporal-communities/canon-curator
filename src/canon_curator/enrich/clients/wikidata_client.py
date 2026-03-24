@@ -67,7 +67,7 @@ class WikidataClient:
 		else:  # specify later, maybe define custom UnknownClaimType exception?
 			raise Exception
 
-	def _fetch_item_page(self, entity_id: str) -> pywikibot.ItemPage:
+	def _fetch_item_page(self, entity_id: str) -> pywikibot.ItemPage | None:
 		"""Fetch a Wikidata ItemPage for a given Wikidata entity ID. Automatically resolves redirects if necessary."""
 
 		# Retrieve the Wikidata item by entity ID
@@ -77,12 +77,14 @@ class WikidataClient:
 		except (
 			pywikibot.exceptions.IsRedirectPageError
 		):  # test case for redirects: wikidata:Q42191769
-			logger.error(
+			logger.warning(
 				f"Page [[wikidata:{entity_id}]] is a redirect page. Trying to resolve the redirect..."
 			)
 			item = item.getRedirectTarget()
 			item.get()
-
+		except pywikibot.exceptions.EntityTypeUnknownError:
+			logger.warning(f"Cannot create ItemPage for {entity_id} on {self._repo}")
+			return None
 		return item
 
 	def _fetch_claims(
@@ -98,7 +100,8 @@ class WikidataClient:
 			return None
 
 		item = self._fetch_item_page(entity_id)
-
+		if item is None:
+			return None
 		if property_id not in item.claims:
 			return None
 
@@ -139,5 +142,7 @@ class WikidataClient:
 
 	def fetch_sitelinks(self, entity_id: str) -> int:
 		item = self._fetch_item_page(entity_id)
+		if item is None:
+			return 0
 		sitelinks = list(item.iterlinks("wikipedia"))
 		return len(sitelinks)
