@@ -79,7 +79,7 @@ class GoodreadsClient:
 
 		return urlparse(str(featured_href)).path
 
-	def fetch_readerstats(self, goodreads_id: str) -> dict:
+	def fetch_readerstats(self, goodreads_id: str) -> dict[str, float | int | str | None]:
 		"""Fetch and parse reader statistics from Goodreads hydration data."""
 		featured_href = self._get_featured_path(goodreads_id)
 
