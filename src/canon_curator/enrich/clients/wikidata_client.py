@@ -32,16 +32,30 @@ class WikidataClient:
 		return [claim for claim in claim_collection if claim.rank != "deprecated"]
 
 	@staticmethod
-	def _fetch_sources(claim: pywikibot.Claim) -> list:
-		references = claim.getSources()
-		sources = []
-		for reference in references:
-			ref_dict = {}
-			for pid in reference:
-				# parse this so that the return value does not depend on pywikibot
-				ref_dict[pid] = reference[pid][0].toJSON()["datavalue"]
-			sources.append(ref_dict)
-		return sources  # leaky abstraction?
+	def _fetch_sources(claim: pywikibot.Claim) -> list[dict]:
+		references = []
+		for reference in claim.getSources():
+			source_iri: str | None = None
+			qualifiers: dict[str, object] = {}
+			for pid, claim_list in reference.items():
+				datavalue = claim_list[0].toJSON()["datavalue"]
+				value = datavalue.get("value")
+				dtype = datavalue.get("type")
+				if dtype == "wikibase-entityid":
+					ref_entity_id = value.get("id") or f"Q{value.get('numeric-id')}"
+					iri = f"https://www.wikidata.org/entity/{ref_entity_id}"
+					if source_iri is None:
+						source_iri = iri
+					else:
+						qualifiers[pid] = iri
+				elif dtype == "time":
+					qualifiers[pid] = value.get("time")
+				elif dtype == "string":
+					qualifiers[pid] = value
+				else:
+					logger.warning(f"Unknown dtype: {dtype}")
+			references.append({"source": source_iri, "qualifiers": qualifiers})
+		return references
 
 	@staticmethod
 	def _fetch_target(claim: pywikibot.Claim, lang: str) -> dict:
