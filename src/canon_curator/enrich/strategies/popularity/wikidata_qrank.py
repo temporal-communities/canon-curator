@@ -1,8 +1,8 @@
 from datetime import datetime, UTC
 import logging
 
-from src.canon_curator.models import PopularityRecord, BaseWorkRecord
-from src.canon_curator.enrich.strategies.providers import get_qrank_client
+from canon_curator.models import PopularityRecord, BaseWorkRecord
+from canon_curator.enrich.strategies.providers import get_qrank_client
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from uuid import UUID
 
-from src.canon_curator.enrich.strategies.registry import Strategy, StrategyRegistry
-from src.canon_curator.models import (
+from canon_curator.enrich.strategies.registry import Strategy, StrategyRegistry
+from canon_curator.models import (
 	BaseWorkRecord,
 	EnrichmentRecord,
 	GeoRecord,
@@ -11,8 +11,8 @@ from src.canon_curator.models import (
 	PopularityRecord,
 	ReaderstatsRecord,
 )
-from src.canon_curator.enrich.chains import StrategyChain
-from src.canon_curator.enrich.strategies.providers import get_qrank_client
+from canon_curator.enrich.chains import StrategyChain
+from canon_curator.enrich.strategies.providers import get_qrank_client
 
 
 class BaseEnricher[T: EnrichmentRecord]:

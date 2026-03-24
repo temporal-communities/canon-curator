@@ -1,5 +1,5 @@
 import threading
-from src.canon_curator.enrich.clients import GNDClient, WikidataClient, GoodreadsClient, QRankClient
+from canon_curator.enrich.clients import GNDClient, WikidataClient, GoodreadsClient, QRankClient
 
 _tls = threading.local()
 
