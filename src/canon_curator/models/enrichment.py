@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, fields
 from datetime import datetime
+from typing import Self
 from uuid import UUID
 
 
@@ -9,7 +10,7 @@ class EnrichmentRecord:
 	work_uuid: UUID | None = None
 
 	@classmethod
-	def empty(cls) -> EnrichmentRecord:
+	def empty(cls) -> Self:
 		"""Create an empty record with all default values."""
 		return cls()
 
