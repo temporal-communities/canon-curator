@@ -1,5 +1,5 @@
 import threading
-from canon_curator.enrich.clients import GNDClient, WikidataClient, GoodreadsClient
+from src.canon_curator.enrich.clients import GNDClient, WikidataClient, GoodreadsClient, QRankClient
 
 _tls = threading.local()
 
@@ -30,4 +30,12 @@ def get_goodreads_client() -> GoodreadsClient:
 	if client is None:
 		client = GoodreadsClient(name="goodreads")
 		_tls.goodreads_client = client
+	return client
+
+
+def get_qrank_client() -> QRankClient:
+	client = getattr(_tls, "qrank_client", None)
+	if client is None:
+		client = QRankClient(name="qrank")
+		_tls.qrank_client = client
 	return client
