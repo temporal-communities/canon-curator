@@ -16,7 +16,11 @@ class EnrichmentRecord:
 
 	def is_empty(self) -> bool:
 		"""Return True if all fields are None."""
-		return all(getattr(self, f.name) is None for f in fields(self))
+		return all(
+			getattr(self, f.name) is None
+			for f in fields(self)
+			if f.name not in {"work_uuid", "retrieved_at"}
+		)
 
 
 @dataclass
