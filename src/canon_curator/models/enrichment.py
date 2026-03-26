@@ -49,7 +49,7 @@ class EnrichmentRecord:
 
 @dataclass
 class GeoRecord(EnrichmentRecord):
-	geo_id: list[str] | None = None
+	geo_id: str | None = None
 	geo_uri: str | None = None
 	geo_label: str | None = None
 	lat: float | None = None
