@@ -33,6 +33,7 @@ dev = [
     "pyright>=1.1.406",
     "pytest>=9.0.0",
     "ruff>=0.13.1",
+    "types-requests>=2.32.4.20260324",
 ]
 
 [tool.ruff]
