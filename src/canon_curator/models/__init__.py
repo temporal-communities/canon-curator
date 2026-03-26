@@ -4,6 +4,7 @@ from .enrichment import (
 	AuthorRecord,
 	PopularityRecord,
 	ReaderstatsRecord,
+	EvidenceLevel,
 )
 from .records import BaseWorkRecord, EnrichedWorkRecord
 
@@ -15,4 +16,5 @@ __all__ = [
 	"ReaderstatsRecord",
 	"BaseWorkRecord",
 	"EnrichedWorkRecord",
+	"EvidenceLevel",
 ]
