@@ -8,7 +8,7 @@ EXPECTED_SCORES = {"Q752584": 576436, "Q114761904": 4762, "Q56304713": 298}
 
 SAMPLE_QIDS = ["Q752584", "Q114761904", "Q56304713"]
 
-QRANK_CSV = pathlib.Path(__file__).parent.parent / "fixtures" / "qrank.csv"
+QRANK_CSV = pathlib.Path(__file__).parent.parent / "testdata" / "qrank.csv"
 
 
 @pytest.fixture

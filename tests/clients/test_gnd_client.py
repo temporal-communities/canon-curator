@@ -2,7 +2,7 @@ import pytest
 from rdflib import URIRef, Graph
 
 from canon_curator.enrich.clients import GNDClient, GNDProperties
-from tests.fixtures.gnd import (
+from tests.testdata.gnd import (
 	SAMPLE_ENTRY_GENDER,
 	SAMPLE_ENTRY_GEOCODE,
 	SAMPLE_ENTRY_GEOMETRY,

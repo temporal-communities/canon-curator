@@ -2,7 +2,7 @@ import pytest
 import pywikibot
 
 from canon_curator.enrich.clients import WikidataClient
-from tests.fixtures.wikidata import (
+from tests.testdata.wikidata import (
 	CLAIM_BIRTH_PLACE_ERESOS,
 	CLAIM_BIRTH_PLACE_LESBOS,
 	CLAIM_BIRTH_PLACE_MYTILENE,

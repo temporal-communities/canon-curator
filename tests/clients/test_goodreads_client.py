@@ -1,7 +1,7 @@
 import pytest
 
 from canon_curator.enrich.clients.goodreads_client import GoodreadsClient
-from tests.fixtures.goodreads import (
+from tests.testdata.goodreads import (
     EDITIONS_PATH,
     FEATURED_PATH,
     EXPECTED_READERSTATS,

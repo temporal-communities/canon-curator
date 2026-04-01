@@ -1,6 +1,6 @@
 from pathlib import Path
 
-GENDER_VOCAB_PATH = Path(__file__).parent.parent / "fixtures" / "gnd_gender_vocab.rdf"
+GENDER_VOCAB_PATH = Path(__file__).parent.parent / "testdata" / "gnd_gender_vocab.rdf"
 GENDER_VOCAB = GENDER_VOCAB_PATH.read_text()
 
 SAMPLE_ENTRY_GENDER = {

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 
-EDITIONS_PATH = Path(__file__).parent.parent / "fixtures" / "goodreads_841320_editions.html"
-FEATURED_PATH = Path(__file__).parent.parent / "fixtures" / "goodreads_841320_featured.html"
+EDITIONS_PATH = Path(__file__).parent.parent / "testdata" / "goodreads_841320_editions.html"
+FEATURED_PATH = Path(__file__).parent.parent / "testdata" / "goodreads_841320_featured.html"
 
 EXPECTED_READERSTATS = {
 	"averageRating": 3.77,
