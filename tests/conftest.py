@@ -5,6 +5,7 @@ from datetime import datetime, UTC
 from canon_curator.models import (
     BaseWorkRecord,
     PopularityRecord,
+    ReaderstatsRecord,
 )
 
 _WORK_UUID = uuid.UUID("00000000-0000-0000-0000-000000000001")
@@ -45,4 +46,26 @@ def expected_sitelinks_record():
         sitelinks_count=20,
         q_rank=None,
         retrieved_at=_RETRIEVED_AT,
+    )
+
+
+@pytest.fixture
+def expected_readerstats_record():
+    return ReaderstatsRecord(
+        work_uuid=_WORK_UUID,
+        avg_rating=3.77,
+        ratings_count=362177,
+        source="https://www.goodreads.com/book/show/14942.Mrs_Dalloway",
+        retrieved_at=_RETRIEVED_AT,
+    )
+
+
+@pytest.fixture
+def expected_empty_readerstats_record():
+    return ReaderstatsRecord(
+        work_uuid=None,
+        avg_rating=None,
+        ratings_count=None,
+        source=None,
+        retrieved_at=None,
     )
