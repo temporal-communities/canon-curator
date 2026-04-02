@@ -26,11 +26,12 @@ def _gnd_author(resource_id: str, work_uuid: UUID | None, property_name: str) ->
 			work_uuid=work_uuid,
 			gender_uri=entry.get("uri"),
 			gender_marker=entry.get("label"),
-			sources=[entry.get("request_url")],
-			source_db="https://www.dnb.de/",
-			interpretation_context=_GND_GENDER_GUIDE,
-			request_uri=f"{client.lobid_base}{resource_id}",
+			sources=[],
+			num_sources=0,
 			evidence_level=None,
+			source_db="https://www.dnb.de/",
+			request_uri=f"{client.lobid_base}{resource_id}",
+			interpretation_context=_GND_GENDER_GUIDE,
 			retrieved_at=retrieval_time,
 		)
 		for entry in entries
