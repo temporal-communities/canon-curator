@@ -3,6 +3,7 @@ import logging
 from types import TracebackType
 from typing import Self
 from rdflib import Graph
+from rdflib import URIRef
 from functools import cached_property
 from shapely import wkt
 from shapely.geometry import Point
@@ -39,6 +40,7 @@ class GNDClient:
 		self.rate_limit = rate_limit
 		self.lobid_base = lobid_base
 		self.context_filename = context_filename
+		self._vocab_cache: dict[str, Graph] = {}
 
 	def __enter__(self) -> Self:
 		"""Enable the use of GNDClient as a context manager."""
@@ -73,23 +75,31 @@ class GNDClient:
 			return {
 				"type": "resource",
 				"uri": entry.get("id"),
-				"gnd_id": entry.get("gndIdentifier"),
 				"label": entry.get("label"),
+				"request_url": entry.get("request_url"),
 			}
 		elif property_name == GNDProperties.GEOMETRY:
 			geom = entry.get("asWKT", [])
 			coords = self._parse_coordinates(geom[0])
 			lon, lat = float(coords[0]), float(coords[1])
-			return {"type": "coordinates", "latitude": lat, "longitude": lon}
+			return {
+				"type": "coordinates",
+				"latitude": lat,
+				"longitude": lon,
+				"request_url": entry.get("request_url"),
+			}
 		else:
 			raise ValueError(f"Unsupported GND property: {property_name} for entry {entry['id']}")
 
 	def _fetch_entries(self, resource_id: str, property_name: str) -> list:
 		resource = self._fetch_resource(resource_id)
-		if resource:
-			return resource.get(property_name, [])
-		else:
+		if not resource:
 			return []
+		request_url = resource.get("request_url")
+		entries = resource.get(property_name, [])
+		for entry in entries:
+			entry["request_url"] = request_url
+		return entries
 
 	def _fetch_resource(self, resource_id: str) -> dict | None:
 		"""
@@ -103,17 +113,45 @@ class GNDClient:
 		if not response:
 			logger.warning(f"Could not fetch resource {resource_id} from URL {url}.")
 			return None
-		return response.json()
+		lobid_data = response.json()
+		lobid_data["request_url"] = response.url
+		return lobid_data
 
-	def fetch_vocab(self, vocab_url: str) -> Graph | None:
-		"""Fetch RDF vocabulary from specified URL."""
+	def _fetch_vocab(self, vocab_url: str) -> Graph | None:
+		"""Fetches RDF vocabulary from specified URL."""
+		if vocab_url in self._vocab_cache:
+			logger.info(f"Using cached vocabulary for {vocab_url}")
+			return self._vocab_cache[vocab_url]
 		g = Graph()
 		logger.info(f"Fetching RDF vocabulary from {vocab_url}")
-		response = self._http_client.fetch_page(vocab_url)
+		response = self._http_client.fetch_page(
+			vocab_url, headers={"Accept": "application/rdf+xml"}
+		)
 		if not response:
 			logger.warning(f"Could not fetch vocabulary from URL {vocab_url}.")
 			return None
-		return g.parse(response.text, format="xml")
+		g.parse(data=response.text, format="xml")
+		self._vocab_cache[vocab_url] = g
+		return g
+
+	def fetch_concept(self, concept_uri: str) -> dict:
+		"""
+		Fetches RDF statements for a GND vocabulary concept URI.
+		A list of GND vocabularies can be found here: https://www.dnb.de/DE/Professionell/Metadatendienste/Exportformate/RDF-Vokabulare/rdf_node.html
+		"""
+		vocab_url, _, _ = concept_uri.partition("#")
+		graph = self._fetch_vocab(vocab_url)
+
+		if graph is None:
+			return {"uri": concept_uri, "statements": []}
+
+		subject = URIRef(concept_uri)
+
+		statements = []
+		for predicate, obj in graph.predicate_objects(subject):
+			statements.append({str(predicate): str(obj)})
+
+		return {"uri": concept_uri, "statements": statements}
 
 	def fetch_property(self, resource_id: str, property_name: str) -> dict:
 		"""

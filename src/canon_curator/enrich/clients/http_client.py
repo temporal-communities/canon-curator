@@ -33,10 +33,9 @@ def rate_limited[Self, **P, T](
 	"""
 
 	def wrapper(self, *args: P.args, **kwargs: P.kwargs) -> T:
-		if not self._limiter.hit(self._limit, self._key):  # Wait until rate limit resets
+		while not self._limiter.hit(self._limit, self._key):
 			reset_time = self._limiter.get_window_stats(self._limit, self._key).reset_time
-			wait_time = reset_time - time.time()
-			logger.debug(f"Wait time is type {type(wait_time)}")
+			wait_time = max(0.0, reset_time - time.time())
 			logger.info(
 				f"Rate limit exceeded. Waiting for {wait_time:.2f} seconds before retrying..."
 			)
@@ -76,6 +75,7 @@ class HttpClient:
 			status_forcelist=[500, 502, 503, 504],  # Retries on HTTP status codes (HTTPError)
 		)
 		session.mount("https://", HTTPAdapter(max_retries=retries))
+		session.mount("http://", HTTPAdapter(max_retries=retries))
 		user_agent = f"canon-curator (https://github.com/temporal-communities/canon-curator) requests/{requests.__version__}"
 		session.headers.update({"User-Agent": user_agent, "Accept": "*/*"})
 		return session
@@ -83,16 +83,23 @@ class HttpClient:
 	def _get_session(self) -> requests.Session:
 		session = getattr(_tls, "session", None)
 		if session is None:
+			logger.debug("Setting up session...")
 			session = self._setup_session()
 			_tls.session = session
 		return session
 
 	@rate_limited
-	def fetch_page(self, url: str, timeout: int = 10) -> requests.Response | None:
+	def fetch_page(
+		self, url: str, timeout: int = 10, headers: dict[str, str] | None = None
+	) -> requests.Response | None:
 		"""Make HTTP request for a url."""
 
 		try:
-			response = self._get_session().get(url, timeout=timeout)
+			session = self._get_session()
+			request_headers = dict(session.headers)
+			if headers:
+				request_headers.update(headers)
+			response = session.get(url, timeout=timeout, headers=request_headers)
 			response.raise_for_status()  # Handle HTTP 4xx and 5xx errors after unsuccessful retries
 			logger.info(f"Fetched {url} with status code: {response.status_code}")
 			return response

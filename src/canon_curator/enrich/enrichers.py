@@ -12,6 +12,7 @@ from canon_curator.models import (
 	ReaderstatsRecord,
 )
 from canon_curator.enrich.chains import StrategyChain
+from canon_curator.enrich.strategies.providers import get_qrank_client
 
 
 class BaseEnricher[T: EnrichmentRecord]:
@@ -78,6 +79,11 @@ class PopularityEnricher(BaseEnricher[PopularityRecord]):
 
 	def __init__(self, chain: StrategyChain):
 		super().__init__(chain)
+
+	def enrich(self, records):
+		qids = [rec.work_qid for rec in records if rec.work_qid]
+		get_qrank_client().prefetch(qids)
+		return super().enrich(records)
 
 
 class ReaderstatEnricher(BaseEnricher[ReaderstatsRecord]):

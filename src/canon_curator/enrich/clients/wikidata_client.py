@@ -32,16 +32,30 @@ class WikidataClient:
 		return [claim for claim in claim_collection if claim.rank != "deprecated"]
 
 	@staticmethod
-	def _fetch_sources(claim: pywikibot.Claim) -> list:
-		references = claim.getSources()
-		sources = []
-		for reference in references:
-			ref_dict = {}
-			for pid in reference:
-				# parse this so that the return value does not depend on pywikibot
-				ref_dict[pid] = reference[pid][0].toJSON()["datavalue"]
-			sources.append(ref_dict)
-		return sources  # leaky abstraction?
+	def _fetch_sources(claim: pywikibot.Claim) -> list[dict]:
+		references = []
+		for reference in claim.getSources():
+			source_iri: str | None = None
+			qualifiers: dict[str, object] = {}
+			for pid, claim_list in reference.items():
+				datavalue = claim_list[0].toJSON()["datavalue"]
+				value = datavalue.get("value")
+				dtype = datavalue.get("type")
+				if dtype == "wikibase-entityid":
+					ref_entity_id = value.get("id") or f"Q{value.get('numeric-id')}"
+					iri = f"https://www.wikidata.org/entity/{ref_entity_id}"
+					if source_iri is None:
+						source_iri = iri
+					else:
+						qualifiers[pid] = iri
+				elif dtype == "time":
+					qualifiers[pid] = value.get("time")
+				elif dtype == "string":
+					qualifiers[pid] = value
+				else:
+					logger.warning(f"Unknown dtype: {dtype}")
+			references.append({"source": source_iri, "qualifiers": qualifiers})
+		return references
 
 	@staticmethod
 	def _fetch_target(claim: pywikibot.Claim, lang: str) -> dict:
@@ -67,7 +81,7 @@ class WikidataClient:
 		else:  # specify later, maybe define custom UnknownClaimType exception?
 			raise Exception
 
-	def _fetch_item_page(self, entity_id: str) -> pywikibot.ItemPage:
+	def _fetch_item_page(self, entity_id: str) -> pywikibot.ItemPage | None:
 		"""Fetch a Wikidata ItemPage for a given Wikidata entity ID. Automatically resolves redirects if necessary."""
 
 		# Retrieve the Wikidata item by entity ID
@@ -77,12 +91,14 @@ class WikidataClient:
 		except (
 			pywikibot.exceptions.IsRedirectPageError
 		):  # test case for redirects: wikidata:Q42191769
-			logger.error(
+			logger.warning(
 				f"Page [[wikidata:{entity_id}]] is a redirect page. Trying to resolve the redirect..."
 			)
 			item = item.getRedirectTarget()
 			item.get()
-
+		except pywikibot.exceptions.EntityTypeUnknownError:
+			logger.warning(f"Cannot create ItemPage for {entity_id} on {self._repo}")
+			return None
 		return item
 
 	def _fetch_claims(
@@ -98,7 +114,8 @@ class WikidataClient:
 			return None
 
 		item = self._fetch_item_page(entity_id)
-
+		if item is None:
+			return None
 		if property_id not in item.claims:
 			return None
 
@@ -136,3 +153,10 @@ class WikidataClient:
 			"lang": lang,
 			"claims": processed_claims,
 		}
+
+	def fetch_sitelinks(self, entity_id: str) -> int:
+		item = self._fetch_item_page(entity_id)
+		if item is None:
+			return 0
+		sitelinks = list(item.iterlinks("wikipedia"))
+		return len(sitelinks)

@@ -20,7 +20,7 @@ from canon_curator.enrich.chains import FirstSuccessChain
 @pytest.fixture
 def good_config():
 	"""Config with valid strategies and strategy chains for all enrichers."""
-	config_path = Path(__file__).parent / "fixtures" / "good_config.yml"
+	config_path = Path(__file__).parent / "testdata" / "good_config.yml"
 	with config_path.open("r", encoding="utf-8") as f:
 		return yaml.safe_load(f)
 
@@ -28,7 +28,7 @@ def good_config():
 @pytest.fixture
 def bad_config():
 	"""Config with invalid strategies and strategy chains."""
-	config_path = Path(__file__).parent / "fixtures" / "bad_config.yml"
+	config_path = Path(__file__).parent / "testdata" / "bad_config.yml"
 	with config_path.open("r", encoding="utf-8") as f:
 		return yaml.safe_load(f)
 
