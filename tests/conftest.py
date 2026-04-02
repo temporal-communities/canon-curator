@@ -148,3 +148,51 @@ def expected_empty_geo_record():
         interpretation_context=None,
         retrieved_at=None,
     )
+
+
+@pytest.fixture
+def expected_author_record_wikidata():
+    return AuthorRecord(
+        work_uuid=_WORK_UUID,
+        gender_uri="https://www.wikidata.org/entity/Q6581072",
+        gender_marker="female",
+        sources=["https://www.wikidata.org/entity/Q2494649"],
+        num_sources=1,
+        evidence_level=EvidenceLevel.REFERENCED,
+        source_db="https://www.wikidata.org/",
+        request_uri="https://www.wikidata.org/entity/Q40909",
+        interpretation_context="https://www.wikidata.org/wiki/Property:P21",
+        retrieved_at=_RETRIEVED_AT,
+    )
+
+
+@pytest.fixture
+def expected_author_record_gnd():
+    return AuthorRecord(
+        work_uuid=_WORK_UUID,
+        gender_uri="https://d-nb.info/standards/vocab/gnd/gender#female",
+        gender_marker="weiblich",
+        sources=[],
+        num_sources=0,
+        evidence_level=None,
+        source_db="https://www.dnb.de/",
+        request_uri="https://lobid.org/gnd/118635174",
+        interpretation_context="https://wiki.dnb.de/download/attachments/50759357/375.pdf",
+        retrieved_at=_RETRIEVED_AT,
+    )
+
+
+@pytest.fixture
+def expected_empty_author_record():
+    return AuthorRecord(
+        work_uuid=None,
+        gender_uri=None,
+        gender_marker=None,
+        sources=None,
+        num_sources=None,
+        evidence_level=None,
+        source_db=None,
+        request_uri=None,
+        interpretation_context=None,
+        retrieved_at=None,
+    )

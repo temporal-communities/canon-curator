@@ -568,3 +568,23 @@ EXPECTED_FETCH_PROPERTY_RESULTS = [
 	EXPECTED_FETCH_PROPERTY_RESULT_BIRTH_PLACE,
 	EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_ERESOS,
 ]
+
+EXPECTED_FETCH_PROPERTY_RESULT_GENDER = {
+	"entity": "Q40909",
+	"property": "P21",
+	"lang": "en",
+	"claims": [
+		{
+			"type": "item",
+			"label": "female",
+			"entity_id": "Q6581072",
+			"sources": [
+				{
+					"source": "https://www.wikidata.org/entity/Q2494649",
+					"qualifiers": {"P813": "+00000002017-11-16T00:00:00Z", "P245": "500330927"},
+				}
+			],
+			"rank": "normal",
+		}
+	],
+}
