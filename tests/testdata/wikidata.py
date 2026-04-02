@@ -517,7 +517,7 @@ EXPECTED_FETCH_PROPERTY_RESULT_BIRTH_PLACE = {
 	],
 }
 
-EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES = {
+EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_ERESOS = {
 	"entity": "Q1018197",
 	"property": "P625",
 	"lang": "en",
@@ -532,7 +532,39 @@ EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES = {
 	],
 }
 
+EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_LESBOS = {
+	"entity": "Q128087",
+	"property": "P625",
+	"lang": "en",
+	"claims": [
+		{
+			"type": "coordinates",
+			"latitude": 39.21,
+			"longitude": 26.28,
+			"sources": [],
+			"rank": "preferred",
+		}
+	],
+}
+
+EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_MYTILENE = {
+	"entity": "Q42295059",
+	"property": "P625",
+	"lang": "en",
+	"claims": [
+		{
+			"type": "coordinates",
+			"latitude": 39.1114,
+			"longitude": 26.5621,
+			"sources": [],
+			"rank": "normal",
+		}
+	],
+}
+
+EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES = EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_ERESOS
+
 EXPECTED_FETCH_PROPERTY_RESULTS = [
 	EXPECTED_FETCH_PROPERTY_RESULT_BIRTH_PLACE,
-	EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES,
+	EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_ERESOS,
 ]
