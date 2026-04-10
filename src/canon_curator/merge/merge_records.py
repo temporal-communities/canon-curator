@@ -22,6 +22,10 @@ def merge_records(
 	enriched_recs: list[EnrichedWorkRecord] = []
 	for rec in base_recs:
 		uid = rec.uuid
+
+		if uid is None:
+			continue
+
 		enriched_recs.append(
 			EnrichedWorkRecord(
 				base_data=rec,

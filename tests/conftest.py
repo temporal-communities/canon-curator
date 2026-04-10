@@ -4,6 +4,7 @@ from datetime import datetime, UTC
 
 from canon_curator.models import (
     BaseWorkRecord,
+    EnrichedWorkRecord,
     PopularityRecord,
     ReaderstatsRecord,
     GeoRecord,
@@ -49,6 +50,16 @@ def expected_sitelinks_record():
         sitelinks_count=20,
         q_rank=None,
         retrieved_at=_RETRIEVED_AT,
+    )
+
+
+@pytest.fixture
+def expected_empty_popularity_record():
+    return PopularityRecord(
+        work_uuid=_WORK_UUID,
+        sitelinks_count=None,
+        q_rank=None,
+        retrieved_at=None,
     )
 
 
@@ -196,3 +207,87 @@ def expected_empty_author_record():
         interpretation_context=None,
         retrieved_at=None,
     )
+
+
+@pytest.fixture
+def expected_merged_popularity_record(): 
+    return PopularityRecord(
+        work_uuid=_WORK_UUID,
+        sitelinks_count=20,
+        q_rank=100,
+        retrieved_at=_RETRIEVED_AT,
+    )
+
+
+@pytest.fixture
+def geodata_mapping(expected_geo_record_gnd): 
+    return {_WORK_UUID: expected_geo_record_gnd}
+
+
+@pytest.fixture
+def empty_geodata_mapping(expected_empty_geo_record): 
+    return {_WORK_UUID: expected_empty_geo_record}
+
+
+@pytest.fixture
+def authordata_mapping(expected_author_record_wikidata): 
+    return {_WORK_UUID: expected_author_record_wikidata}
+
+
+@pytest.fixture
+def empty_authordata_mapping(expected_empty_author_record): 
+    return {_WORK_UUID: expected_empty_author_record}
+
+
+@pytest.fixture
+def popularity_mapping(expected_merged_popularity_record): 
+    return {_WORK_UUID: expected_merged_popularity_record}
+
+
+@pytest.fixture
+def empty_popularity_mapping(expected_empty_popularity_record): 
+    return {_WORK_UUID: expected_empty_popularity_record}
+
+
+@pytest.fixture
+def readerstats_mapping(expected_readerstats_record): 
+    return {_WORK_UUID: expected_readerstats_record}
+
+
+@pytest.fixture
+def empty_readerstats_mapping(expected_empty_readerstats_record): 
+    return {_WORK_UUID: expected_empty_readerstats_record}
+
+
+@pytest.fixture
+def expected_enriched_work_record(    
+    base_record,
+    expected_geo_record_gnd,
+    expected_author_record_wikidata,
+    expected_merged_popularity_record,
+    expected_readerstats_record,
+    ):
+    return EnrichedWorkRecord(
+				base_data=base_record,
+				geodata=expected_geo_record_gnd,
+				authordata=expected_author_record_wikidata,
+				wd_metrics=expected_merged_popularity_record,
+				readerstats=expected_readerstats_record,
+			)
+
+
+@pytest.fixture
+def expected_empty_enriched_work_record(    
+    base_record,
+    expected_empty_geo_record,
+    expected_empty_author_record,
+    expected_empty_popularity_record,
+    expected_empty_readerstats_record,
+    ):
+    return EnrichedWorkRecord(
+				base_data=base_record,
+				geodata=expected_empty_geo_record,
+				authordata=expected_empty_author_record,
+				wd_metrics=expected_empty_popularity_record,
+				readerstats=expected_empty_readerstats_record,
+			)
