@@ -1,23 +1,24 @@
 from __future__ import annotations
+from functools import reduce
 from collections.abc import Callable, Sequence
 from abc import ABC, abstractmethod
 
 from canon_curator.models import EnrichmentRecord, BaseWorkRecord
 
-type Strategy = Callable[[BaseWorkRecord], Sequence[EnrichmentRecord]]
+type Strategy[T: EnrichmentRecord] = Callable[[BaseWorkRecord], Sequence[T]]
 
 
-class StrategyChain(ABC):
-	def __init__(self, strategies: Sequence[Strategy]):
-		self.strategies: list[Strategy] = list(strategies)
+class StrategyChain[T: EnrichmentRecord](ABC):
+	def __init__(self, strategies: Sequence[Strategy[T]]):
+		self.strategies: list[Strategy[T]] = list(strategies)
 
 	@abstractmethod
-	def run(self, record: BaseWorkRecord) -> Sequence[EnrichmentRecord]:
+	def run(self, record: BaseWorkRecord) -> Sequence[T]:
 		"""Run strategies to process records and return enrichment results."""
 		pass
 
 
-class FirstSuccessChain(StrategyChain):
+class FirstSuccessChain[T: EnrichmentRecord](StrategyChain[T]):
 	"""
 	Runs a sequence of enrichment strategies and returns the first successful result.
 	Each strategy is applied to the given record in the order provided. As soon as a
@@ -26,13 +27,30 @@ class FirstSuccessChain(StrategyChain):
 	an empty EnrichmentRecord is returned.
 	"""
 
-	def __init__(self, strategies: Sequence[Strategy]):
-		super().__init__(strategies)
-
-	def run(self, record: BaseWorkRecord) -> Sequence[EnrichmentRecord]:
+	def run(self, record: BaseWorkRecord) -> Sequence[T]:
 		"""Assumes strategy returns a list of enrichment records and returns the first non-empty result."""
+		enrichment_recs: Sequence[T] = []
 		for strategy in self.strategies:
 			enrichment_recs = strategy(record)
 			if any(not rec.is_empty() for rec in enrichment_recs):
 				return enrichment_recs
-		return [EnrichmentRecord.empty()]
+		return enrichment_recs
+
+
+class MergeFieldsChain[T: EnrichmentRecord](StrategyChain[T]):
+	"""
+	Runs a sequence of enrichment strategies and merges the resulting enrichment records
+	field-wise into a single EnrichmentRecord.
+	Intended for cases where different strategies enrich different fields (e.g. wikidata_qrank and wikidata_sitelinks).
+	"""
+
+	def run(self, record: BaseWorkRecord) -> Sequence[T]:
+		"""Assumes strategy returns a list of enrichment records and merges all non-empty results."""
+		enrichment_recs: list[T] = []
+		for strategy in self.strategies:
+			enrichment_recs.extend(strategy(record))
+
+		if all(rec.is_empty() for rec in enrichment_recs):
+			return [enrichment_recs[0]]
+
+		return [reduce(lambda a, b: a.merge(b), enrichment_recs)]

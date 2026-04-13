@@ -46,6 +46,13 @@ class EnrichmentRecord:
 			if f.name not in {"work_uuid", "retrieved_at"}
 		)
 
+	def merge(self, other: Self) -> Self:
+		"""Combine two records field-wise, filling missing values from other."""
+		merged = {}
+		for field in fields(self):
+			merged[field.name] = getattr(self, field.name) or getattr(other, field.name)
+		return type(self)(**merged)
+
 
 @dataclass
 class GeoRecord(EnrichmentRecord):

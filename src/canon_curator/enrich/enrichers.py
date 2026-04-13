@@ -37,11 +37,9 @@ class BaseEnricher[T: EnrichmentRecord]:
 					f"Allowed: {', '.join(allowed_names)}"
 				)
 
-	def enrich(
-		self, records: Iterable[BaseWorkRecord]
-	) -> dict[UUID | None, Sequence[EnrichmentRecord]]:
+	def enrich(self, records: Iterable[BaseWorkRecord]) -> dict[UUID | None, Sequence[T]]:
 		"""Applies the strategy chain to each record and collect results."""
-		enrichment_recs: dict[UUID | None, Sequence[EnrichmentRecord]] = {}
+		enrichment_recs: dict[UUID | None, Sequence[T]] = {}
 		for rec in records:
 			enrichment_recs[rec.uuid] = self.chain.run(rec)
 		return enrichment_recs
@@ -55,9 +53,6 @@ class GeodataEnricher(BaseEnricher[GeoRecord]):
 		StrategyRegistry.WIKIDATA_P495,
 	)
 
-	def __init__(self, chain: StrategyChain):
-		super().__init__(chain)
-
 
 class AuthordataEnricher(BaseEnricher[AuthorRecord]):
 	name = "authordata"
@@ -65,9 +60,6 @@ class AuthordataEnricher(BaseEnricher[AuthorRecord]):
 		StrategyRegistry.GND_GENDER,
 		StrategyRegistry.WIKIDATA_P21,
 	)
-
-	def __init__(self, chain: StrategyChain):
-		super().__init__(chain)
 
 
 class PopularityEnricher(BaseEnricher[PopularityRecord]):
@@ -77,10 +69,9 @@ class PopularityEnricher(BaseEnricher[PopularityRecord]):
 		StrategyRegistry.WIKIDATA_QRANK,
 	)
 
-	def __init__(self, chain: StrategyChain):
-		super().__init__(chain)
-
-	def enrich(self, records):
+	def enrich(
+		self, records: Iterable[BaseWorkRecord]
+	) -> dict[UUID | None, Sequence[PopularityRecord]]:
 		qids = [rec.work_qid for rec in records if rec.work_qid]
 		get_qrank_client().prefetch(qids)
 		return super().enrich(records)
@@ -89,6 +80,3 @@ class PopularityEnricher(BaseEnricher[PopularityRecord]):
 class ReaderstatEnricher(BaseEnricher[ReaderstatsRecord]):
 	name = "readerstats"
 	ALLOWED_STRATEGIES: tuple[Strategy[ReaderstatsRecord], ...] = (StrategyRegistry.GOODREADS,)
-
-	def __init__(self, chain: StrategyChain):
-		super().__init__(chain)
