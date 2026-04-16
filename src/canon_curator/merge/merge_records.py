@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from uuid import UUID
 
 from canon_curator.models import (
@@ -13,8 +13,8 @@ from canon_curator.models import (
 
 def merge_records(
 	base_recs: Iterable[BaseWorkRecord],
-	geodata: Mapping[UUID, GeoRecord],
-	authordata: Mapping[UUID, AuthorRecord],
+	geodata: Mapping[UUID, Sequence[GeoRecord]],
+	authordata: Mapping[UUID, Sequence[AuthorRecord]],
 	popularity: Mapping[UUID, PopularityRecord],
 	readerstats: Mapping[UUID, ReaderstatsRecord],
 ) -> list[EnrichedWorkRecord]:
@@ -29,8 +29,8 @@ def merge_records(
 		enriched_recs.append(
 			EnrichedWorkRecord(
 				base_data=rec,
-				geodata=geodata.get(uid, GeoRecord()),
-				authordata=authordata.get(uid, AuthorRecord()),
+				geodata=list(geodata.get(uid, [])),
+				authordata=list(authordata.get(uid, [])),
 				wd_metrics=popularity.get(uid, PopularityRecord()),
 				readerstats=readerstats.get(uid, ReaderstatsRecord()),
 			)
