@@ -9,7 +9,7 @@ EXPECTED_JSONL_PATH = Path(__file__).parent / "testdata" / "expected_jsonlines_e
 EXPECTED_JSONL = EXPECTED_JSONL_PATH.read_text(encoding="utf-8")
 
 
-def test_jsonlies_export_success(
+def test_jsonlines_export_success(
 	expected_enriched_work_record, expected_empty_enriched_work_record
 ):
 	buffer = StringIO()
