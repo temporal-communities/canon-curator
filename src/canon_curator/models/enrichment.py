@@ -1,9 +1,9 @@
 from __future__ import annotations
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from datetime import datetime
 from enum import StrEnum
 from typing import Self
-from uuid import UUID
+from uuid import UUID, uuid4
 
 
 class EvidenceLevel(StrEnum):
@@ -31,6 +31,9 @@ class EvidenceLevel(StrEnum):
 
 @dataclass
 class EnrichmentRecord:
+	uuid: UUID = field(
+		default_factory=lambda: uuid4()
+	)  # note: lambda is necessary for patching, do not remove
 	work_uuid: UUID | None = None
 
 	@classmethod
@@ -43,14 +46,14 @@ class EnrichmentRecord:
 		return all(
 			getattr(self, f.name) is None
 			for f in fields(self)
-			if f.name not in {"work_uuid", "retrieved_at"}
+			if f.name not in {"work_uuid", "uuid", "retrieved_at"}
 		)
 
 	def merge(self, other: Self) -> Self:
 		"""Combine two records field-wise, filling missing values from other."""
 		merged = {}
-		for field in fields(self):
-			merged[field.name] = getattr(self, field.name) or getattr(other, field.name)
+		for f in fields(self):
+			merged[f.name] = getattr(self, f.name) or getattr(other, f.name)
 		return type(self)(**merged)
 
 
