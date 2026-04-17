@@ -1,35 +1,162 @@
 {
-  "@version": 1.1,
+  "@context": {
+    "@version": 1.1,
 
-  "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-  "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-  "xsd": "http://www.w3.org/2001/XMLSchema#",
-  "schema": "http://schema.org/",
-  "prov": "http://www.w3.org/ns/prov#",
-  "lrm": "http://iflastandards.info/ns/lrm/lrmoo/",
-  "homoit": "https://homosaurus.org/v4/",
-  "canon": "https://github.com/temporal-communities/canon-curator/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dct": "http://purl.org/dc/terms/",
+    "place": "http://www.ontologydesignpatterns.org/cp/owl/place.owl#",
+    "geo": "http://www.w3.org/2003/01/geo/wgs84_pos#",
+    "prov": "http://www.w3.org/ns/prov#",
+    "pav": "http://purl.org/pav/",
+    "owl": "http://www.w3.org/2002/07/owl#",
 
-  "Work": "canon:Work",
-  "CanonList": "canon:CanonList",
-  "EnrichmentRecord": "canon:EnrichmentRecord",
-  "Author": "canon:Author",
+    "Ontology": "http://www.w3.org/2002/07/owl#Ontology",
 
-  "hasEnrichment": { "@id": "canon:hasEnrichment", "@type": "@id" },
-  "geolocation": { "@id": "canon:geolocation", "@type": "@id" },
-  "authorGeolocation": { "@id": "canon:authorGeolocation", "@type": "@id" },
-  "authorBirthPlace": { "@id": "canon:authorBirthPlace", "@type": "@id" },
-  "workGeolocation": { "@id": "canon:workGeolocation", "@type": "@id" },
-  "workOrigin": { "@id": "canon:workOrigin", "@type": "@id" },
-  "languageGeolocation": { "@id": "canon:languageGeolocation", "@type": "@id" },
-  "authorLanguage": { "@id": "canon:authorLanguage", "@type": "@id" },
-  "workLanguage": { "@id": "canon:workLanguage", "@type": "@id" },
-  "assumedGeolocation": { "@id": "canon:assumedGeolocation", "@type": "@id" },
-  "gender": { "@id": "canon:gender", "@type": "@id" },
-  "assumedGender": { "@id": "canon:assumedGender", "@type": "@id" },
-  "recordedGender": { "@id": "canon:recordedGender", "@type": "@id" },
-  "selfIdentifiedGender": {
-    "@id": "canon:selfIdentifiedGender",
-    "@type": "@id"
+    "CanonList": "https://github.com/temporal-communities/canon-curator/ontology/CanonList",
+    "Work": "https://github.com/temporal-communities/canon-curator/ontology/Work",
+    "Author": "https://github.com/temporal-communities/canon-curator/ontology/Author",
+    "EnrichmentRecord": "https://github.com/temporal-communities/canon-curator/ontology/EnrichmentRecord",
+    "Location": "https://github.com/temporal-communities/canon-curator/ontology/Location",
+    "EnrichmentActivity": "https://github.com/temporal-communities/canon-curator/ontology/EnrichmentActivity",
+    "EntityReconciliation": "https://github.com/temporal-communities/canon-curator/ontology/EntityReconciliation",
+    "MetadataEnrichment": "https://github.com/temporal-communities/canon-curator/ontology/MetadataEnrichment",
+
+    "label": {
+      "@id": "http://www.w3.org/2000/01/rdf-schema#label"
+    },
+    "comment": {
+      "@id": "http://www.w3.org/2000/01/rdf-schema#comment"
+    },
+
+    "title": {
+      "@id": "http://purl.org/dc/terms/title"
+    },
+    "hasPart": {
+      "@id": "http://purl.org/dc/terms/hasPart",
+      "@type": "@id"
+    },
+
+    "hasEnrichment": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/hasEnrichment",
+      "@type": "@id"
+    },
+
+    "geolocation": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/geolocation",
+      "@type": "@id"
+    },
+    "authorBirthPlace": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/authorBirthPlace",
+      "@type": "@id"
+    },
+    "workOrigin": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/workOrigin",
+      "@type": "@id"
+    },
+    "assumedGeolocation": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/assumedGeolocation",
+      "@type": "@id"
+    },
+
+    "gender": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/gender",
+      "@type": "@id"
+    },
+    "assumedGender": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/assumedGender",
+      "@type": "@id"
+    },
+    "recordedGender": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/recordedGender",
+      "@type": "@id"
+    },
+    "selfIdentifiedGender": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/selfIdentifiedGender",
+      "@type": "@id"
+    },
+
+    "popularityMetric": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/popularityMetric",
+      "@type": "xsd:decimal"
+    },
+    "ratingValue": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/ratingValue",
+      "@type": "xsd:decimal"
+    },
+    "ratingCount": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/ratingCount",
+      "@type": "xsd:integer"
+    },
+
+    "lat": {
+      "@id": "http://www.w3.org/2003/01/geo/wgs84_pos#lat",
+      "@type": "xsd:float"
+    },
+    "long": {
+      "@id": "http://www.w3.org/2003/01/geo/wgs84_pos#long",
+      "@type": "xsd:float"
+    },
+
+    "sameAs": {
+      "@id": "http://www.w3.org/2002/07/owl#sameAs",
+      "@type": "@id"
+    },
+
+    "atLocation": {
+      "@id": "http://www.w3.org/ns/prov#atLocation",
+      "@type": "@id"
+    },
+    "generatedAtTime": {
+      "@id": "http://www.w3.org/ns/prov#generatedAtTime",
+      "@type": "xsd:dateTime"
+    },
+    "startedAtTime": {
+      "@id": "http://www.w3.org/ns/prov#startedAtTime",
+      "@type": "xsd:dateTime"
+    },
+    "hadPrimarySource": {
+      "@id": "http://www.w3.org/ns/prov#hadPrimarySource",
+      "@type": "@id"
+    },
+    "qualifiedPrimarySource": {
+      "@id": "http://www.w3.org/ns/prov#qualifiedPrimarySource",
+      "@type": "@id"
+    },
+    "PrimarySource": "http://www.w3.org/ns/prov#PrimarySource",
+    "entity": {
+      "@id": "http://www.w3.org/ns/prov#entity",
+      "@type": "@id"
+    },
+    "wasDerivedFrom": {
+      "@id": "http://www.w3.org/ns/prov#wasDerivedFrom",
+      "@type": "@id"
+    },
+    "wasGeneratedBy": {
+      "@id": "http://www.w3.org/ns/prov#wasGeneratedBy",
+      "@type": "@id"
+    },
+    "used": {
+      "@id": "http://www.w3.org/ns/prov#used",
+      "@type": "@id"
+    },
+    "generated": {
+      "@id": "http://www.w3.org/ns/prov#generated",
+      "@type": "@id"
+    },
+    "wasAssociatedWith": {
+      "@id": "http://www.w3.org/ns/prov#wasAssociatedWith",
+      "@type": "@id"
+    },
+
+    "sourceAccessedAt": {
+      "@id": "http://purl.org/pav/sourceAccessedAt",
+      "@type": "@id"
+    },
+    "retrievedOn": {
+      "@id": "http://purl.org/pav/retrievedOn",
+      "@type": "xsd:dateTime"
+    }
   }
 }
