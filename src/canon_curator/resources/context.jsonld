@@ -37,9 +37,25 @@
       "@id": "http://purl.org/dc/terms/hasPart",
       "@type": "@id"
     },
+    "isPartOf": {
+      "@id": "http://purl.org/dc/terms/isPartOf",
+      "@type": "@id"
+    },
+    "creator": {
+      "@id": "http://purl.org/dc/terms/creator",
+      "@type": "@id"
+    },
+    "issued": {
+      "@id": "http://purl.org/dc/terms/issued",
+      "@type": "@id"
+    },
 
     "hasEnrichment": {
       "@id": "https://github.com/temporal-communities/canon-curator/ontology/hasEnrichment",
+      "@type": "@id"
+    },
+    "hasMetadata": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/hasMetadata",
       "@type": "@id"
     },
 
