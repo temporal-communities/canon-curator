@@ -110,6 +110,14 @@ canon:popularityMetric a owl:DatatypeProperty ;
     rdfs:label "Popularity metric"@en ;
     rdfs:range xsd:decimal .
 
+canon:qRank a owl:DatatypeProperty ;
+    rdfs:label "QRank rank"@en ;
+    rdfs:range xsd:integer .
+
+canon:sitelinkCount a owl:DatatypeProperty ;
+    rdfs:label "Sitelink count"@en ;
+    rdfs:range xsd:integer .
+
 canon:ratingValue a owl:DatatypeProperty ;
     rdfs:label "Rating value"@en ;
     rdfs:range xsd:decimal .

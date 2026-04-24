@@ -97,6 +97,14 @@
       "@id": "https://github.com/temporal-communities/canon-curator/ontology/popularityMetric",
       "@type": "xsd:decimal"
     },
+    "qRank": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/qRank",
+      "@type": "xsd:integer"
+    },
+    "sitelinkCount": {
+      "@id": "https://github.com/temporal-communities/canon-curator/ontology/sitelinkCount",
+      "@type": "xsd:integer"
+    },
     "ratingValue": {
       "@id": "https://github.com/temporal-communities/canon-curator/ontology/ratingValue",
       "@type": "xsd:decimal"
