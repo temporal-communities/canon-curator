@@ -31,5 +31,5 @@ class EnrichedWorkRecord:
 	base_data: BaseWorkRecord = field(default_factory=BaseWorkRecord)
 	authordata: list[AuthorRecord] = field(default_factory=list)
 	geodata: list[GeoRecord] = field(default_factory=list)
-	wd_metrics: PopularityRecord = field(default_factory=PopularityRecord)
-	readerstats: ReaderstatsRecord = field(default_factory=ReaderstatsRecord)
+	wd_metrics: list[PopularityRecord] = field(default_factory=list)
+	readerstats: list[ReaderstatsRecord] = field(default_factory=list)

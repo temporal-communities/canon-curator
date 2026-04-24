@@ -15,8 +15,8 @@ def merge_records(
 	base_recs: Iterable[BaseWorkRecord],
 	geodata: Mapping[UUID, Sequence[GeoRecord]],
 	authordata: Mapping[UUID, Sequence[AuthorRecord]],
-	popularity: Mapping[UUID, PopularityRecord],
-	readerstats: Mapping[UUID, ReaderstatsRecord],
+	popularity: Mapping[UUID, Sequence[PopularityRecord]],
+	readerstats: Mapping[UUID, Sequence[ReaderstatsRecord]],
 ) -> list[EnrichedWorkRecord]:
 	"""Merge BaseWorkRecords with enrichment data, using dataclass defaults for missing fields."""
 	enriched_recs: list[EnrichedWorkRecord] = []
@@ -31,8 +31,8 @@ def merge_records(
 				base_data=rec,
 				geodata=list(geodata.get(uid, [])),
 				authordata=list(authordata.get(uid, [])),
-				wd_metrics=popularity.get(uid, PopularityRecord()),
-				readerstats=readerstats.get(uid, ReaderstatsRecord()),
+				wd_metrics=list(popularity.get(uid, [])),
+				readerstats=list(readerstats.get(uid, [])),
 			)
 		)
 

@@ -316,22 +316,22 @@ def empty_authordata_mapping():
 
 @pytest.fixture
 def popularity_mapping():
-	return {_WORK_UUID: _make_merged_popularity_record(_POPULARITY_UUID)}
+	return {_WORK_UUID: [_make_merged_popularity_record(_POPULARITY_UUID)]}
 
 
 @pytest.fixture
 def empty_popularity_mapping():
-	return {_WORK_UUID: _make_empty_popularity_record(_POPULARITY_UUID)}
+	return {_WORK_UUID: [_make_empty_popularity_record(_POPULARITY_UUID)]}
 
 
 @pytest.fixture
 def readerstats_mapping():
-	return {_WORK_UUID: _make_readerstats_record(_READERSTATS_UUID)}
+	return {_WORK_UUID: [_make_readerstats_record(_READERSTATS_UUID)]}
 
 
 @pytest.fixture
 def empty_readerstats_mapping():
-	return {_WORK_UUID: _make_empty_readerstats_record(_READERSTATS_UUID)}
+	return {_WORK_UUID: [_make_empty_readerstats_record(_READERSTATS_UUID)]}
 
 
 @pytest.fixture
@@ -340,8 +340,8 @@ def expected_enriched_work_record(base_record):
 		base_data=base_record,
 		geodata=[_make_geo_record_gnd(rec_uuid=_GEO_UUID)],
 		authordata=[_make_author_record_wikidata(rec_uuid=_AUTHOR_UUID)],
-		wd_metrics=_make_merged_popularity_record(rec_uuid=_POPULARITY_UUID),
-		readerstats=_make_readerstats_record(rec_uuid=_READERSTATS_UUID),
+		wd_metrics=[_make_merged_popularity_record(rec_uuid=_POPULARITY_UUID)],
+		readerstats=[_make_readerstats_record(rec_uuid=_READERSTATS_UUID)],
 	)
 
 
@@ -351,6 +351,6 @@ def expected_empty_enriched_work_record(base_record):
 		base_data=base_record,
 		geodata=[_make_empty_geo_record(rec_uuid=_GEO_UUID)],
 		authordata=[_make_empty_author_record(rec_uuid=_AUTHOR_UUID)],
-		wd_metrics=_make_empty_popularity_record(rec_uuid=_POPULARITY_UUID),
-		readerstats=_make_empty_readerstats_record(rec_uuid=_READERSTATS_UUID),
+		wd_metrics=[_make_empty_popularity_record(rec_uuid=_POPULARITY_UUID)],
+		readerstats=[_make_empty_readerstats_record(rec_uuid=_READERSTATS_UUID)],
 	)
