@@ -10,13 +10,16 @@ from canon_curator.models import (
 	GeoRecord,
 	AuthorRecord,
 	EvidenceLevel,
+	PopularityMetric,
 )
 
 _WORK_UUID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 _REC_UUID = uuid.UUID("00000000-0000-0000-0000-000000000002")
 _GEO_UUID = uuid.UUID("00000000-0000-0000-0000-000000000003")
 _AUTHOR_UUID = uuid.UUID("00000000-0000-0000-0000-000000000004")
-_POPULARITY_UUID = uuid.UUID("00000000-0000-0000-0000-000000000005")
+_SITELINKS_UUID = uuid.UUID("00000000-0000-0000-0000-000000000005")
+_QRANK_UUID = uuid.UUID("00000000-0000-0000-0000-000000000007")
+_POPULARITY_UUID = uuid.UUID("00000000-0000-0000-0000-000000000008")
 _READERSTATS_UUID = uuid.UUID("00000000-0000-0000-0000-000000000006")
 _RETRIEVED_AT = datetime(2025, 1, 1, 0, 0, 0, tzinfo=UTC)
 
@@ -147,30 +150,24 @@ def _make_empty_author_record(rec_uuid=_REC_UUID):
 
 def _make_sitelinks_record(rec_uuid=_REC_UUID):
 	return PopularityRecord(
-		uuid=_REC_UUID,
+		uuid=rec_uuid,
 		work_uuid=_WORK_UUID,
-		sitelinks_count=20,
-		q_rank=None,
+		value=20,
+		metric=PopularityMetric.SITELINKS,
+		source_db="https://www.wikidata.org/",
+		request_uri="https://www.wikidata.org/entity/Q752584",
 		retrieved_at=_RETRIEVED_AT,
 	)
 
 
 def _make_qrank_record(rec_uuid=_REC_UUID):
 	return PopularityRecord(
-		uuid=_REC_UUID,
-		work_uuid=_WORK_UUID,
-		sitelinks_count=None,
-		q_rank=100,
-		retrieved_at=_RETRIEVED_AT,
-	)
-
-
-def _make_merged_popularity_record(rec_uuid=_REC_UUID):
-	return PopularityRecord(
 		uuid=rec_uuid,
 		work_uuid=_WORK_UUID,
-		sitelinks_count=20,
-		q_rank=100,
+		value=100,
+		metric=PopularityMetric.QRANK,
+		source_db="https://qrank.toolforge.org/",
+		request_uri="https://qrank.toolforge.org/download/qrank.csv.gz",
 		retrieved_at=_RETRIEVED_AT,
 	)
 
@@ -179,8 +176,10 @@ def _make_empty_popularity_record(rec_uuid=_REC_UUID):
 	return PopularityRecord(
 		uuid=rec_uuid,
 		work_uuid=None,
-		sitelinks_count=None,
-		q_rank=None,
+		value=None,
+		metric=None,
+		source_db=None,
+		request_uri=None,
 		retrieved_at=None,
 	)
 
@@ -290,11 +289,6 @@ def expected_empty_author_record():
 
 
 @pytest.fixture
-def expected_merged_popularity_record():
-	return _make_merged_popularity_record()
-
-
-@pytest.fixture
 def geodata_mapping():
 	return {_WORK_UUID: [_make_geo_record_gnd(_GEO_UUID)]}
 
@@ -316,7 +310,7 @@ def empty_authordata_mapping():
 
 @pytest.fixture
 def popularity_mapping():
-	return {_WORK_UUID: [_make_merged_popularity_record(_POPULARITY_UUID)]}
+	return {_WORK_UUID: [_make_sitelinks_record(_SITELINKS_UUID), _make_qrank_record(_QRANK_UUID)]}
 
 
 @pytest.fixture
@@ -340,7 +334,10 @@ def expected_enriched_work_record(base_record):
 		base_data=base_record,
 		geodata=[_make_geo_record_gnd(rec_uuid=_GEO_UUID)],
 		authordata=[_make_author_record_wikidata(rec_uuid=_AUTHOR_UUID)],
-		wd_metrics=[_make_merged_popularity_record(rec_uuid=_POPULARITY_UUID)],
+		wd_metrics=[
+			_make_sitelinks_record(rec_uuid=_SITELINKS_UUID),
+			_make_qrank_record(rec_uuid=_QRANK_UUID),
+		],
 		readerstats=[_make_readerstats_record(rec_uuid=_READERSTATS_UUID)],
 	)
 
