@@ -114,5 +114,6 @@ class PopularityRecord(EnrichmentRecord):
 class ReaderstatsRecord(EnrichmentRecord):
 	avg_rating: float | None = None
 	ratings_count: int | None = None
-	source: str | None = None
+	source_db: str | None = None
+	request_uri: str | None = None
 	retrieved_at: datetime | None = None
