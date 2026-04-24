@@ -190,7 +190,8 @@ def _make_readerstats_record(rec_uuid=_REC_UUID):
 		work_uuid=_WORK_UUID,
 		avg_rating=3.77,
 		ratings_count=362177,
-		source="https://www.goodreads.com/book/show/14942.Mrs_Dalloway",
+		source_db="https://www.goodreads.com/",
+		request_uri="https://www.goodreads.com/book/show/14942.Mrs_Dalloway",
 		retrieved_at=_RETRIEVED_AT,
 	)
 
@@ -201,7 +202,8 @@ def _make_empty_readerstats_record(rec_uuid=_REC_UUID):
 		work_uuid=None,
 		avg_rating=None,
 		ratings_count=None,
-		source=None,
+		source_db=None,
+		request_uri=None,
 		retrieved_at=None,
 	)
 
