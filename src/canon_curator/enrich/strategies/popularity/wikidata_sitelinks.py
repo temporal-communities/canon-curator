@@ -1,7 +1,7 @@
 from datetime import datetime, UTC
 import logging
 
-from canon_curator.models import PopularityRecord, BaseWorkRecord
+from canon_curator.models import PopularityRecord, BaseWorkRecord, PopularityMetric
 from canon_curator.enrich.strategies.providers import get_wikidata_client
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,10 @@ def wikidata_sitelinks(record: BaseWorkRecord) -> list[PopularityRecord]:
 	return [
 		PopularityRecord(
 			work_uuid=record.uuid,
-			sitelinks_count=num_sitelinks,
+			value=num_sitelinks,
+			metric=PopularityMetric.SITELINKS,
+			source_db="https://www.wikidata.org/",
+			request_uri=f"https://www.wikidata.org/entity/{record.work_qid}",
 			retrieved_at=retrieval_time,
 		)
 	]
