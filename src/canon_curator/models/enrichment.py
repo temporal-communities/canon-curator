@@ -29,6 +29,21 @@ class EvidenceLevel(StrEnum):
 	INFERRED = "inferred"
 
 
+class PopularityMetric(StrEnum):
+	"""
+	Registry of popularity metrics used to qualify popularity records
+
+	- 'qrank' is intended for the QRank ranking signal for Wikidata entities, for more information see https://qrank.toolforge.org/.
+	- 'sitelinks' is intended for the count of sitelinks associate with a Wikidata item, for instance, the number of Wikipedia language
+	editions. For more information see  https://www.wikidata.org/wiki/Help:Sitelinks
+
+	If the metric is not further specified, the field 'metric' in the PopularityMetric dataclass should be left on the default value of None.
+	"""
+
+	QRANK = "qrank"
+	SITELINKS = "sitelinks"
+
+
 @dataclass
 class EnrichmentRecord:
 	uuid: UUID = field(
@@ -88,8 +103,10 @@ class AuthorRecord(EnrichmentRecord):
 
 @dataclass
 class PopularityRecord(EnrichmentRecord):
-	sitelinks_count: int | None = None
-	q_rank: int | None = None
+	value: int | None = None
+	metric: PopularityMetric | None = None
+	source_db: str | None = None
+	request_uri: str | None = None
 	retrieved_at: datetime | None = None
 
 
