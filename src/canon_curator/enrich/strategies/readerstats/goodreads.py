@@ -24,7 +24,8 @@ def _goodreads(goodreads_id: str, work_uuid: UUID | None) -> list[ReaderstatsRec
 			work_uuid=work_uuid,
 			avg_rating=float(avg_rating) if avg_rating else None,
 			ratings_count=int(ratings_count) if ratings_count else None,
-			source=str(featured_url) if featured_url else None,
+			source_db=client.goodreads_base,
+			request_uri=str(featured_url) if featured_url else None,
 			retrieved_at=retrieval_time,
 		)
 	]
