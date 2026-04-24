@@ -5,7 +5,15 @@ from collections.abc import Iterable
 from rdflib import BNode, Graph, Literal, URIRef
 from rdflib.namespace import Namespace, DCTERMS, PROV, OWL, RDF, RDFS, XSD
 
-from canon_curator.models.enrichment import AuthorRecord, EvidenceLevel, GeoRecord
+from canon_curator.models.enrichment import (
+	EnrichmentRecord,
+	AuthorRecord,
+	GeoRecord,
+	ReaderstatsRecord,
+	PopularityRecord,
+	EvidenceLevel,
+	PopularityMetric,
+)
 from canon_curator.models.records import EnrichedWorkRecord
 
 CANON = Namespace("https://github.com/temporal-communities/canon-curator/ontology/")
@@ -18,10 +26,10 @@ PAV = Namespace("http://purl.org/pav/")
 # IRIs (e.g. https://www.wikidata.org/wiki/Property:P19). These double as sourceAccessedAt
 # values since the property page is consulted to understand what is being queried.
 # GND strategies set interpretation_context to a documentation PDF URL, which does not match
-# any key here. GND records therefore fall through to the defaults (assumedGeolocation / work
-# and assumedGender / author), which is correct as long as GND evidence_level is always None.
+# any key here. GND records therefore fall through to the defaults (assumedGeolocation
+# and assumedGender). This is correct as long as GND evidence_level is always None.
 
-_GEO: dict[str, dict[EvidenceLevel | None, tuple[str, str]]] = {
+_GEO: dict[str | None, dict[EvidenceLevel | None, tuple[str, str]]] = {
 	"https://www.wikidata.org/wiki/Property:P19": {
 		EvidenceLevel.AUTHORITATIVE: ("authorBirthPlace", "author"),
 		EvidenceLevel.REFERENCED: ("authorBirthPlace", "author"),
@@ -36,13 +44,19 @@ _GEO: dict[str, dict[EvidenceLevel | None, tuple[str, str]]] = {
 	},
 }
 
-_AUTHOR: dict[str, dict[EvidenceLevel | None, tuple[str, str]]] = {
+_AUTHOR: dict[str | None, dict[EvidenceLevel | None, tuple[str, str]]] = {
 	"https://www.wikidata.org/wiki/Property:P21": {
 		EvidenceLevel.AUTHORITATIVE: ("selfIdentifiedGender", "author"),
 		EvidenceLevel.REFERENCED: ("recordedGender", "author"),
 		EvidenceLevel.INFERRED: ("assumedGender", "author"),
 		None: ("assumedGender", "author"),
 	},
+}
+
+_POPULARITY: dict[PopularityMetric | None, str] = {
+	PopularityMetric.SITELINKS: "sitelinkCount",
+	PopularityMetric.QRANK: "qRank",
+	None: "popularityMetric",
 }
 
 
@@ -96,8 +110,16 @@ class RDFGraphBuilder:
 					activity_iris.append(activity_iri)
 			for author_rec in rec.authordata or []:
 				if author_rec.gender_uri:
-					_, activtiy_iri = self._add_author_enrichment(g, author_iri, author_rec)
-					activity_iris.append(activtiy_iri)
+					_, activity_iri = self._add_author_enrichment(g, author_iri, author_rec)
+					activity_iris.append(activity_iri)
+			for pop_rec in rec.wd_metrics:
+				if not pop_rec.is_empty():
+					_, activity_iri = self._add_popularity_enrichment(g, work_iri, pop_rec)
+					activity_iris.append(activity_iri)
+			for rs_rec in rec.readerstats:
+				if not rs_rec.is_empty():
+					_, activity_iri = self._add_readerstats_enrichment(g, work_iri, rs_rec)
+					activity_iris.append(activity_iri)
 
 		self._add_workflow_provenance(g, activity_iris)
 
@@ -174,7 +196,7 @@ class RDFGraphBuilder:
 		return iri
 
 	def _add_location(self, g: Graph, geo_rec: GeoRecord) -> URIRef:
-		if geo_rec.geo_uri is None: 
+		if geo_rec.geo_uri is None:
 			raise ValueError("geo_uri must be set")
 		iri = URIRef(geo_rec.geo_uri)
 		g.add((iri, RDF.type, CANON.Location))
@@ -187,7 +209,10 @@ class RDFGraphBuilder:
 		return iri
 
 	def _add_enrichment_provenance(
-		self, g: Graph, enr_iri: URIRef, enr_rec: AuthorRecord | GeoRecord
+		self,
+		g: Graph,
+		enr_iri: URIRef,
+		enr_rec: GeoRecord | AuthorRecord | PopularityRecord | ReaderstatsRecord,
 	) -> URIRef:
 		activity_iri = URIRef(f"{enr_iri}#activity")
 
@@ -203,13 +228,14 @@ class RDFGraphBuilder:
 					Literal(enr_rec.retrieved_at, datatype=XSD.dateTime),
 				)
 			)
-		if enr_rec.sources:
-			for src in enr_rec.sources:
-				g.add((enr_iri, PROV.hadPrimarySource, URIRef(src)))
-		if enr_rec.source_db:
+		if getattr(enr_rec, "source_db", None) and enr_rec.source_db is not None:
 			g.add((enr_iri, PROV.wasDerivedFrom, URIRef(enr_rec.source_db)))
-		if enr_rec.interpretation_context:
-			g.add((enr_iri, PAV.sourceAccessedAt, URIRef(enr_rec.interpretation_context)))
+		if isinstance(enr_rec, (GeoRecord, AuthorRecord)):
+			if enr_rec.sources is not None:
+				for src in enr_rec.sources:
+					g.add((enr_iri, PROV.hadPrimarySource, URIRef(src)))
+			if enr_rec.interpretation_context is not None:
+				g.add((enr_iri, PAV.sourceAccessedAt, URIRef(enr_rec.interpretation_context)))
 
 		g.add((activity_iri, RDF.type, CANON.MetadataEnrichment))
 		g.add((activity_iri, PROV.generated, enr_iri))
@@ -221,7 +247,7 @@ class RDFGraphBuilder:
 					Literal(enr_rec.retrieved_at, datatype=XSD.dateTime),
 				)
 			)
-		if enr_rec.request_uri:
+		if getattr(enr_rec, "request_uri", None) and enr_rec.request_uri is not None:
 			g.add((activity_iri, PROV.used, URIRef(enr_rec.request_uri)))
 		if self.software_agent_iri:
 			g.add((activity_iri, PROV.wasAssociatedWith, self.software_agent_iri))
@@ -229,7 +255,7 @@ class RDFGraphBuilder:
 		return activity_iri
 
 	def _add_reification(
-		self, g: Graph, subj: URIRef, pred: URIRef, obj: URIRef, enr_iri: URIRef
+		self, g: Graph, subj: URIRef, pred: URIRef, obj: URIRef | Literal, enr_iri: URIRef
 	) -> BNode:
 		stmt = BNode()
 		g.add((stmt, RDF.type, RDF.Statement))
@@ -246,7 +272,7 @@ class RDFGraphBuilder:
 		enr_iri = URIRef(f"urn:uuid:{geo_rec.uuid}")
 		location_iri = self._add_location(g, geo_rec)
 
-		entry = _GEO.get(geo_rec.interpretation_context or "")
+		entry = _GEO.get(geo_rec.interpretation_context)
 		canon_property, subject_type = (
 			entry[geo_rec.evidence_level] if entry else ("assumedGeolocation", "work")
 		)
@@ -263,12 +289,12 @@ class RDFGraphBuilder:
 		self, g: Graph, author_iri: URIRef, author_rec: AuthorRecord
 	) -> tuple[URIRef, URIRef]:
 		enr_iri = URIRef(f"urn:uuid:{author_rec.uuid}")
-		if author_rec.gender_uri is None: 
+		if author_rec.gender_uri is None:
 			raise ValueError("gender_uri must be set")
 
 		gender_iri = URIRef(author_rec.gender_uri)
 
-		entry = _AUTHOR.get(author_rec.interpretation_context or "")
+		entry = _AUTHOR.get(author_rec.interpretation_context)
 		canon_property, _ = (
 			entry[author_rec.evidence_level] if entry else ("assumedGender", "author")
 		)
@@ -278,4 +304,38 @@ class RDFGraphBuilder:
 		self._add_reification(g, author_iri, predicate_iri, gender_iri, enr_iri)
 
 		activity_iri = self._add_enrichment_provenance(g, enr_iri, author_rec)
+		return enr_iri, activity_iri
+
+	def _add_popularity_enrichment(
+		self, g: Graph, work_iri: URIRef, pop_rec: PopularityRecord
+	) -> tuple[URIRef, URIRef]:
+		enr_iri = URIRef(f"urn:uuid:{pop_rec.uuid}")
+
+		if pop_rec.value is not None:
+			canon_property = _POPULARITY[pop_rec.metric]
+			predicate_iri = CANON[canon_property]
+			value_literal = Literal(pop_rec.value, datatype=XSD.integer)
+
+			g.add((work_iri, predicate_iri, value_literal))
+			self._add_reification(g, work_iri, predicate_iri, value_literal, enr_iri)
+
+		activity_iri = self._add_enrichment_provenance(g, enr_iri, pop_rec)
+		return enr_iri, activity_iri
+
+	def _add_readerstats_enrichment(
+		self, g: Graph, work_iri: URIRef, rs_rec: ReaderstatsRecord
+	) -> tuple[URIRef, URIRef]:
+		enr_iri = URIRef(f"urn:uuid:{rs_rec.uuid}")
+
+		if rs_rec.avg_rating is not None:
+			value_literal = Literal(rs_rec.avg_rating, datatype=XSD.decimal)
+			g.add((work_iri, CANON.ratingValue, value_literal))
+			self._add_reification(g, work_iri, CANON.ratingValue, value_literal, enr_iri)
+
+		if rs_rec.ratings_count is not None:
+			count_literal = Literal(rs_rec.ratings_count, datatype=XSD.integer)
+			g.add((work_iri, CANON.ratingCount, count_literal))
+			self._add_reification(g, work_iri, CANON.ratingCount, count_literal, enr_iri)
+
+		activity_iri = self._add_enrichment_provenance(g, enr_iri, rs_rec)
 		return enr_iri, activity_iri
