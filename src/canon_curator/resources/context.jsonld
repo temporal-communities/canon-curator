@@ -46,8 +46,7 @@
       "@type": "@id"
     },
     "issued": {
-      "@id": "http://purl.org/dc/terms/issued",
-      "@type": "@id"
+      "@id": "http://purl.org/dc/terms/issued"
     },
 
     "hasEnrichment": {
