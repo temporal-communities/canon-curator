@@ -1,0 +1,116 @@
+@prefix canon: <https://github.com/temporal-communities/canon-curator/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix pav: <http://purl.org/pav/> .
+
+_:b0 canon:hasEnrichment <urn:uuid:00000000-0000-0000-0000-000000000006> ;
+	rdf:reifies <<( <https://www.wikidata.org/entity/Q752584> canon:ratingCount 362177 )>> .
+_:b1 canon:hasEnrichment <urn:uuid:00000000-0000-0000-0000-000000000004> ;
+	rdf:reifies <<( <https://www.wikidata.org/entity/Q40909> canon:recordedGender <https://www.wikidata.org/entity/Q6581072> )>> .
+_:b2 canon:hasEnrichment <urn:uuid:00000000-0000-0000-0000-000000000007> ;
+	rdf:reifies <<( <https://www.wikidata.org/entity/Q752584> canon:qRank 100 )>> .
+_:b3 canon:hasEnrichment <urn:uuid:00000000-0000-0000-0000-000000000006> ;
+	rdf:reifies <<( <https://www.wikidata.org/entity/Q752584> canon:ratingValue 3.77 )>> .
+_:b4 canon:hasEnrichment <urn:uuid:00000000-0000-0000-0000-000000000003> ;
+	rdf:reifies <<( <https://www.wikidata.org/entity/Q752584> canon:assumedGeolocation <https://d-nb.info/standards/vocab/gnd/geographic-area-code#XA-GB> )>> .
+_:b5 canon:hasEnrichment <urn:uuid:00000000-0000-0000-0000-000000000005> ;
+	rdf:reifies <<( <https://www.wikidata.org/entity/Q752584> canon:sitelinkCount 20 )>> .
+
+<urn:uuid:enrichment-run> a canon:EnrichmentActivity ;
+    dct:hasPart <urn:uuid:00000000-0000-0000-0000-000000000003#activity>,
+        <urn:uuid:00000000-0000-0000-0000-000000000004#activity>,
+        <urn:uuid:00000000-0000-0000-0000-000000000005#activity>,
+        <urn:uuid:00000000-0000-0000-0000-000000000006#activity>,
+        <urn:uuid:00000000-0000-0000-0000-000000000007#activity> .
+
+<https://d-nb.info/standards/vocab/gnd/geographic-area-code#XA-GB> a canon:Location ;
+    rdfs:label "Großbritannien" ;
+    geo:lat 54.75844 ;
+    geo:long -2.69531 .
+
+<urn:uuid:00000000-0000-0000-0000-000000000003> a canon:EnrichmentRecord ;
+    pav:sourceAccessedAt <https://wiki.dnb.de/download/attachments/90411323/laendercodeleitfaden.pdf> ;
+    prov:generatedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://example.org/test-list>, <https://www.dnb.de/> ;
+    prov:wasGeneratedBy <urn:uuid:00000000-0000-0000-0000-000000000003#activity> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000003#activity> a canon:MetadataEnrichment ;
+    prov:generated <urn:uuid:00000000-0000-0000-0000-000000000003> ;
+    prov:startedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:used <https://lobid.org/gnd/4316776-7> ;
+    prov:wasAssociatedWith <https://github.com/temporal-communities/canon-curator/> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000004> a canon:EnrichmentRecord ;
+    pav:sourceAccessedAt <https://www.wikidata.org/wiki/Property:P21> ;
+    prov:generatedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:hadPrimarySource <https://www.wikidata.org/entity/Q2494649> ;
+    prov:wasDerivedFrom <https://example.org/test-list>, <https://www.wikidata.org/> ;
+    prov:wasGeneratedBy <urn:uuid:00000000-0000-0000-0000-000000000004#activity> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000004#activity> a canon:MetadataEnrichment ;
+    prov:generated <urn:uuid:00000000-0000-0000-0000-000000000004> ;
+    prov:startedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:used <https://www.wikidata.org/entity/Q40909> ;
+    prov:wasAssociatedWith <https://github.com/temporal-communities/canon-curator/> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000005> a canon:EnrichmentRecord ;
+    prov:generatedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://example.org/test-list>, <https://www.wikidata.org/> ;
+    prov:wasGeneratedBy <urn:uuid:00000000-0000-0000-0000-000000000005#activity> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000005#activity> a canon:MetadataEnrichment ;
+    prov:generated <urn:uuid:00000000-0000-0000-0000-000000000005> ;
+    prov:startedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:used <https://www.wikidata.org/entity/Q752584> ;
+    prov:wasAssociatedWith <https://github.com/temporal-communities/canon-curator/> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000006> a canon:EnrichmentRecord ;
+    prov:generatedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://example.org/test-list>, <https://www.goodreads.com/> ;
+    prov:wasGeneratedBy <urn:uuid:00000000-0000-0000-0000-000000000006#activity> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000006#activity> a canon:MetadataEnrichment ;
+    prov:generated <urn:uuid:00000000-0000-0000-0000-000000000006> ;
+    prov:startedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:used <https://www.goodreads.com/book/show/14942.Mrs_Dalloway> ;
+    prov:wasAssociatedWith <https://github.com/temporal-communities/canon-curator/> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000007> a canon:EnrichmentRecord ;
+    prov:generatedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:wasDerivedFrom <https://example.org/test-list>, <https://qrank.toolforge.org/> ;
+    prov:wasGeneratedBy <urn:uuid:00000000-0000-0000-0000-000000000007#activity> .
+
+<urn:uuid:00000000-0000-0000-0000-000000000007#activity> a canon:MetadataEnrichment ;
+    prov:generated <urn:uuid:00000000-0000-0000-0000-000000000007> ;
+    prov:startedAtTime "2025-01-01T00:00:00Z"^^xsd:dateTime ;
+    prov:used <https://qrank.toolforge.org/download/qrank.csv.gz> ;
+    prov:wasAssociatedWith <https://github.com/temporal-communities/canon-curator/> .
+
+<https://www.wikidata.org/entity/Q40909> a canon:Author ;
+    rdfs:label "Virginia Woolf" ;
+    owl:sameAs <https://d-nb.info/gnd/118635174>, <https://www.wikidata.org/entity/Q40909> ;
+    canon:recordedGender <https://www.wikidata.org/entity/Q6581072> .
+
+<https://example.org/test-list> a canon:CanonList ;
+    rdfs:label "My Test Canon List" ;
+    canon:hasMetadata <https://example.org/test-list-metadata> .
+
+<https://www.wikidata.org/entity/Q752584> a canon:Work ;
+    rdfs:label "Mrs. Dalloway" ;
+    dct:creator <https://www.wikidata.org/entity/Q40909> ;
+    dct:isPartOf <https://example.org/test-list> ;
+    dct:issued "1925" ;
+    dct:title "Mrs. Dalloway" ;
+    owl:sameAs <https://d-nb.info/gnd/4316776-7>,
+        <https://www.goodreads.com/book/show/841320>,
+        <https://www.wikidata.org/entity/Q752584> ;
+    canon:assumedGeolocation <https://d-nb.info/standards/vocab/gnd/geographic-area-code#XA-GB> ;
+    canon:qRank 100 ;
+    canon:ratingCount 362177 ;
+    canon:ratingValue 3.77 ;
+    canon:sitelinkCount 20 .
