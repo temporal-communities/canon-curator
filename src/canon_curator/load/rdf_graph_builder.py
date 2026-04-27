@@ -2,11 +2,21 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from rdflib import BNode, Graph, Literal, URIRef
-from rdflib.namespace import Namespace, DCTERMS, PROV, OWL, RDF, RDFS, XSD
+import pyoxigraph as ox
+
+from canon_curator.load.namespaces import (
+	CANON,
+	DCTERMS,
+	GEO_WGS,
+	OWL,
+	PAV,
+	PROV,
+	RDF,
+	RDFS,
+	XSD,
+)
 
 from canon_curator.models.enrichment import (
-	EnrichmentRecord,
 	AuthorRecord,
 	GeoRecord,
 	ReaderstatsRecord,
@@ -15,10 +25,6 @@ from canon_curator.models.enrichment import (
 	PopularityMetric,
 )
 from canon_curator.models.records import EnrichedWorkRecord
-
-CANON = Namespace("https://github.com/temporal-communities/canon-curator/ontology/")
-GEO_WGS = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
-PAV = Namespace("http://purl.org/pav/")
 
 
 # Dictionaries for vocabulary alignment
@@ -61,14 +67,20 @@ _POPULARITY: dict[PopularityMetric | None, str] = {
 
 
 class RDFGraphBuilder:
-	"""Build an rdflib Graph from EnrichedWorkRecord instances.
+	"""Build a pyoxigraph Store from EnrichedWorkRecord instances.
 
-	The dictionaries _GEO, _AUTHOR map each enrichment record's
-	interpretation_context and evidence_level to the correct canon: property and subject.
-	RDF-star annotations link each triple to its enrichment record node.
-	Please note: Statement-level provenance for geodata and author data is added with standard reification,
-	since RDFlib does not support RDF-star yet. Exporters may convert reified statements to JSON-LD-star or Turtle-star.
+	Propositions such as "author Y has birth place Z" are linked with their provenance (=enrichment record)
+	using the RDF 1.2 triple annotation / triple term pattern:
 
+	    _:b rdf:reifies <<( subj pred obj )>> ;
+	        canon:hasEnrichment <enr_iri> .
+
+	Propositions denoted by the triple term (subj pred obj) are always asserted in the graph, but the source
+	(or lack of sources) is used to decide which subproperty of canon:geoloccation and canon:gender is used
+	in the triple term.
+
+	See: https://pyoxigraph.readthedocs.io/en/stable/migration.html#from-0-4-to-0-5 and
+	https://www.w3.org/TR/rdf12-concepts/#section-triple-terms-reification for more information.
 	"""
 
 	def __init__(
@@ -78,264 +90,378 @@ class RDFGraphBuilder:
 		canon_list_metadata_iri: str | None = None,
 		software_agent_iri: str | None = "https://github.com/temporal-communities/canon-curator/",
 	) -> None:
-		self.canon_list_iri = URIRef(canon_list_iri)
+		self.canon_list_iri = ox.NamedNode(canon_list_iri)
 		self.canon_list_name = canon_list_name
 		self.canon_list_metadata_iri = (
-			URIRef(canon_list_metadata_iri) if canon_list_metadata_iri else None
+			ox.NamedNode(canon_list_metadata_iri) if canon_list_metadata_iri else None
 		)
-		self.software_agent_iri = URIRef(software_agent_iri) if software_agent_iri else None
+		self.software_agent_iri = ox.NamedNode(software_agent_iri) if software_agent_iri else None
 
-	def build(self, records: Iterable[EnrichedWorkRecord]) -> Graph:
-		g = Graph()
-		g.bind("canon", CANON)
-		g.bind("pav", PAV)
-		g.bind("prov", PROV)
-		g.bind("dct", DCTERMS)
-		g.bind("geo", GEO_WGS)
+	def build(self, records: Iterable[EnrichedWorkRecord]) -> ox.Store:
+		store = ox.Store()
 
-		self._add_canon_list(g)
-		if (
-			self.canon_list_metadata_iri
-		):  # TODO: add warning for missing metadata; merge with graph, add connector
-			self._add_list_metadata(g)
+		store.add(
+			ox.Quad(
+				self.canon_list_iri,
+				ox.NamedNode(RDF + "type"),
+				ox.NamedNode(CANON + "CanonList"),
+			)
+		)
+		if self.canon_list_name:
+			store.add(
+				ox.Quad(
+					self.canon_list_iri,
+					ox.NamedNode(RDFS + "label"),
+					ox.Literal(self.canon_list_name),
+				)
+			)
+		if self.canon_list_metadata_iri:
+			store.add(
+				ox.Quad(
+					self.canon_list_iri,
+					ox.NamedNode(CANON + "hasMetadata"),
+					self.canon_list_metadata_iri,
+				)
+			)
 
-		seen_authors: dict[str, URIRef] = {}
-		activity_iris: list[URIRef] = []
+		seen_authors: dict[str, ox.NamedNode] = {}
+		activity_iris: list[ox.NamedNode] = []
+
 		for rec in records:
-			author_iri = self._add_author(g, rec, seen_authors)
-			work_iri = self._add_work(g, rec, author_iri)
+			author_iri = self._add_author(store, rec, seen_authors)
+			work_iri = self._add_work(store, rec, author_iri)
+
 			for geo_rec in rec.geodata or []:
 				if geo_rec.geo_uri:
-					_, activity_iri = self._add_geo_enrichment(g, work_iri, author_iri, geo_rec)
-					activity_iris.append(activity_iri)
+					_, act = self._add_geo_enrichment(store, work_iri, author_iri, geo_rec)
+					activity_iris.append(act)
+
 			for author_rec in rec.authordata or []:
 				if author_rec.gender_uri:
-					_, activity_iri = self._add_author_enrichment(g, author_iri, author_rec)
-					activity_iris.append(activity_iri)
+					_, act = self._add_author_enrichment(store, author_iri, author_rec)
+					activity_iris.append(act)
+
 			for pop_rec in rec.wd_metrics:
 				if not pop_rec.is_empty():
-					_, activity_iri = self._add_popularity_enrichment(g, work_iri, pop_rec)
-					activity_iris.append(activity_iri)
+					_, act = self._add_popularity_enrichment(store, work_iri, pop_rec)
+					activity_iris.append(act)
+
 			for rs_rec in rec.readerstats:
 				if not rs_rec.is_empty():
-					_, activity_iri = self._add_readerstats_enrichment(g, work_iri, rs_rec)
-					activity_iris.append(activity_iri)
+					_, act = self._add_readerstats_enrichment(store, work_iri, rs_rec)
+					activity_iris.append(act)
 
-		self._add_workflow_provenance(g, activity_iris)
+		run_iri = ox.NamedNode("urn:uuid:enrichment-run")
+		store.add(
+			ox.Quad(
+				run_iri,
+				ox.NamedNode(RDF + "type"),
+				ox.NamedNode(CANON + "EnrichmentActivity"),
+			)
+		)
+		for act in activity_iris:
+			store.add(ox.Quad(run_iri, ox.NamedNode(DCTERMS + "hasPart"), act))
 
-		return g
+		return store
 
-	def _add_canon_list(self, g: Graph) -> None:
-		g.add((self.canon_list_iri, RDF.type, CANON.CanonList))
-		if self.canon_list_name:
-			g.add((self.canon_list_iri, RDFS.label, Literal(self.canon_list_name)))
+	def _annotate(
+		self,
+		store: ox.Store,
+		subj: ox.NamedNode,
+		pred: ox.NamedNode,
+		obj: ox.NamedNode | ox.Literal,
+		enr_iri: ox.NamedNode,
+	) -> None:
+		"""Assert a triple in the RDF graph and annotate it using the RDF 1.2 pattern:
 
-	def _add_list_metadata(self, g: Graph) -> None:
-		if self.canon_list_metadata_iri is None:
-			raise ValueError("canon_list_metadata_iri must be set")
-		g.add((self.canon_list_iri, CANON.hasMetadata, self.canon_list_metadata_iri))
+		_:b rdf:reifies <<( subj pred obj )>> ;
+		    canon:hasEnrichment enr_iri .
 
-	def _add_workflow_provenance(self, g: Graph, activity_iris: Iterable[URIRef]) -> URIRef:
-		run_iri = URIRef("urn:uuid:enrichment-run")
-		g.add((run_iri, RDF.type, CANON.EnrichmentActivity))
-		for iri in activity_iris:
-			g.add((run_iri, DCTERMS.hasPart, iri))
-		return run_iri
+		See: https://www.w3.org/TR/rdf12-concepts/#section-triple-terms-reification
+		"""
+		store.add(ox.Quad(subj, pred, obj))
+		bnode = ox.BlankNode()
+		store.add(ox.Quad(bnode, ox.NamedNode(RDF + "reifies"), ox.Triple(subj, pred, obj)))
+		store.add(ox.Quad(bnode, ox.NamedNode(CANON + "hasEnrichment"), enr_iri))
 
-	def _add_author(self, g: Graph, rec: EnrichedWorkRecord, seen: dict) -> URIRef:
+	def _add_author(
+		self,
+		store: ox.Store,
+		rec: EnrichedWorkRecord,
+		seen: dict[str, ox.NamedNode],
+	) -> ox.NamedNode:
 		base = rec.base_data
 		if base.author_qid:
-			iri = URIRef(f"https://www.wikidata.org/entity/{base.author_qid}")
+			iri = ox.NamedNode(f"https://www.wikidata.org/entity/{base.author_qid}")
 		elif base.author_gnd_id:
-			iri = URIRef(f"https://d-nb.info/gnd/{base.author_gnd_id}")
+			iri = ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}")
 		else:
-			iri = URIRef(f"urn:uuid:{base.uuid}#author")
+			iri = ox.NamedNode(f"urn:uuid:{base.uuid}#author")
 
-		if str(iri) in seen:  #  TODO: test with different enrichment chains
-			return seen[str(iri)]
-		seen[str(iri)] = iri
+		if iri.value in seen:
+			return seen[iri.value]
+		seen[iri.value] = iri
 
-		g.add((iri, RDF.type, CANON.Author))
+		store.add(ox.Quad(iri, ox.NamedNode(RDF + "type"), ox.NamedNode(CANON + "Author")))
 		if base.author:
-			g.add((iri, RDFS.label, Literal(base.author)))
+			store.add(ox.Quad(iri, ox.NamedNode(RDFS + "label"), ox.Literal(base.author)))
 		if base.author_qid:
-			g.add((iri, OWL.sameAs, URIRef(f"https://www.wikidata.org/entity/{base.author_qid}")))
-		if base.author_gnd_id:
-			g.add((iri, OWL.sameAs, URIRef(f"https://d-nb.info/gnd/{base.author_gnd_id}")))
-		return iri
-
-	def _add_work(self, g: Graph, rec: EnrichedWorkRecord, author_iri: URIRef) -> URIRef:
-		base = rec.base_data
-		if base.work_qid:
-			iri = URIRef(f"https://www.wikidata.org/entity/{base.work_qid}")
-		elif base.work_gnd_id:
-			iri = URIRef(f"https://d-nb.info/gnd/{base.work_gnd_id}")
-		else:
-			iri = URIRef(f"urn:uuid:{base.uuid}")
-
-		g.add((iri, RDF.type, CANON.Work))
-		g.add((iri, DCTERMS.isPartOf, self.canon_list_iri))
-		g.add((iri, DCTERMS.creator, author_iri))
-		if base.title:
-			g.add((iri, RDFS.label, Literal(base.title)))
-			g.add((iri, DCTERMS.title, Literal(base.title)))
-		if base.publication_date:
-			g.add((iri, DCTERMS.issued, Literal(base.publication_date)))
-		if base.work_qid:
-			g.add((iri, OWL.sameAs, URIRef(f"https://www.wikidata.org/entity/{base.work_qid}")))
-		if base.work_gnd_id:
-			g.add((iri, OWL.sameAs, URIRef(f"https://d-nb.info/gnd/{base.work_gnd_id}")))
-		if base.work_goodreads_id:
-			g.add(
-				(
+			store.add(
+				ox.Quad(
 					iri,
-					OWL.sameAs,
-					URIRef(f"https://www.goodreads.com/book/show/{base.work_goodreads_id}"),
+					ox.NamedNode(OWL + "sameAs"),
+					ox.NamedNode(f"https://www.wikidata.org/entity/{base.author_qid}"),
+				)
+			)
+		if base.author_gnd_id:
+			store.add(
+				ox.Quad(
+					iri,
+					ox.NamedNode(OWL + "sameAs"),
+					ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}"),
 				)
 			)
 		return iri
 
-	def _add_location(self, g: Graph, geo_rec: GeoRecord) -> URIRef:
+	def _add_work(
+		self,
+		store: ox.Store,
+		rec: EnrichedWorkRecord,
+		author_iri: ox.NamedNode,
+	) -> ox.NamedNode:
+		base = rec.base_data
+		if base.work_qid:
+			iri = ox.NamedNode(f"https://www.wikidata.org/entity/{base.work_qid}")
+		elif base.work_gnd_id:
+			iri = ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}")
+		else:
+			iri = ox.NamedNode(f"urn:uuid:{base.uuid}")
+
+		store.add(ox.Quad(iri, ox.NamedNode(RDF + "type"), ox.NamedNode(CANON + "Work")))
+		store.add(ox.Quad(iri, ox.NamedNode(DCTERMS + "isPartOf"), self.canon_list_iri))
+		store.add(ox.Quad(iri, ox.NamedNode(DCTERMS + "creator"), author_iri))
+		if base.title:
+			store.add(ox.Quad(iri, ox.NamedNode(RDFS + "label"), ox.Literal(base.title)))
+			store.add(ox.Quad(iri, ox.NamedNode(DCTERMS + "title"), ox.Literal(base.title)))
+		if base.publication_date:
+			store.add(
+				ox.Quad(iri, ox.NamedNode(DCTERMS + "issued"), ox.Literal(base.publication_date))
+			)
+		if base.work_qid:
+			store.add(
+				ox.Quad(
+					iri,
+					ox.NamedNode(OWL + "sameAs"),
+					ox.NamedNode(f"https://www.wikidata.org/entity/{base.work_qid}"),
+				)
+			)
+		if base.work_gnd_id:
+			store.add(
+				ox.Quad(
+					iri,
+					ox.NamedNode(OWL + "sameAs"),
+					ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}"),
+				)
+			)
+		if base.work_goodreads_id:
+			store.add(
+				ox.Quad(
+					iri,
+					ox.NamedNode(OWL + "sameAs"),
+					ox.NamedNode(f"https://www.goodreads.com/book/show/{base.work_goodreads_id}"),
+				)
+			)
+		return iri
+
+	def _add_location(self, store: ox.Store, geo_rec: GeoRecord) -> ox.NamedNode:
 		if geo_rec.geo_uri is None:
 			raise ValueError("geo_uri must be set")
-		iri = URIRef(geo_rec.geo_uri)
-		g.add((iri, RDF.type, CANON.Location))
+		iri = ox.NamedNode(geo_rec.geo_uri)
+		store.add(ox.Quad(iri, ox.NamedNode(RDF + "type"), ox.NamedNode(CANON + "Location")))
 		if geo_rec.geo_label:
-			g.add((iri, RDFS.label, Literal(geo_rec.geo_label)))
+			store.add(ox.Quad(iri, ox.NamedNode(RDFS + "label"), ox.Literal(geo_rec.geo_label)))
 		if geo_rec.lat is not None:
-			g.add((iri, GEO_WGS.lat, Literal(geo_rec.lat, datatype=XSD.decimal)))
+			store.add(
+				ox.Quad(
+					iri,
+					ox.NamedNode(GEO_WGS + "lat"),
+					ox.Literal(str(geo_rec.lat), datatype=ox.NamedNode(XSD + "decimal")),
+				)
+			)
 		if geo_rec.lon is not None:
-			g.add((iri, GEO_WGS.long, Literal(geo_rec.lon, datatype=XSD.decimal)))
+			store.add(
+				ox.Quad(
+					iri,
+					ox.NamedNode(GEO_WGS + "long"),
+					ox.Literal(str(geo_rec.lon), datatype=ox.NamedNode(XSD + "decimal")),
+				)
+			)
 		return iri
 
 	def _add_enrichment_provenance(
 		self,
-		g: Graph,
-		enr_iri: URIRef,
+		store: ox.Store,
+		enr_iri: ox.NamedNode,
 		enr_rec: GeoRecord | AuthorRecord | PopularityRecord | ReaderstatsRecord,
-	) -> URIRef:
-		activity_iri = URIRef(f"{enr_iri}#activity")
+	) -> ox.NamedNode:
+		activity_iri = ox.NamedNode(f"{enr_iri.value}#activity")
 
-		g.add((enr_iri, RDF.type, CANON.EnrichmentRecord))
-		g.add((enr_iri, PROV.wasDerivedFrom, self.canon_list_iri))
-		g.add((enr_iri, PROV.wasGeneratedBy, activity_iri))
+		store.add(
+			ox.Quad(enr_iri, ox.NamedNode(RDF + "type"), ox.NamedNode(CANON + "EnrichmentRecord"))
+		)
+		store.add(ox.Quad(enr_iri, ox.NamedNode(PROV + "wasDerivedFrom"), self.canon_list_iri))
+		store.add(ox.Quad(enr_iri, ox.NamedNode(PROV + "wasGeneratedBy"), activity_iri))
 
 		if enr_rec.retrieved_at is not None:
-			g.add(
-				(
+			store.add(
+				ox.Quad(
 					enr_iri,
-					PROV.generatedAtTime,
-					Literal(enr_rec.retrieved_at, datatype=XSD.dateTime),
+					ox.NamedNode(PROV + "generatedAtTime"),
+					ox.Literal(str(enr_rec.retrieved_at), datatype=ox.NamedNode(XSD + "dateTime")),
 				)
 			)
-		if getattr(enr_rec, "source_db", None) and enr_rec.source_db is not None:
-			g.add((enr_iri, PROV.wasDerivedFrom, URIRef(enr_rec.source_db)))
+		if enr_rec.source_db is not None:
+			store.add(
+				ox.Quad(
+					enr_iri,
+					ox.NamedNode(PROV + "wasDerivedFrom"),
+					ox.NamedNode(enr_rec.source_db),
+				)
+			)
+
 		if isinstance(enr_rec, (GeoRecord, AuthorRecord)):
 			if enr_rec.sources is not None:
 				for src in enr_rec.sources:
-					g.add((enr_iri, PROV.hadPrimarySource, URIRef(src)))
+					store.add(
+						ox.Quad(
+							enr_iri,
+							ox.NamedNode(PROV + "hadPrimarySource"),
+							ox.NamedNode(src),
+						)
+					)
 			if enr_rec.interpretation_context is not None:
-				g.add((enr_iri, PAV.sourceAccessedAt, URIRef(enr_rec.interpretation_context)))
+				store.add(
+					ox.Quad(
+						enr_iri,
+						ox.NamedNode(PAV + "sourceAccessedAt"),
+						ox.NamedNode(enr_rec.interpretation_context),
+					)
+				)
 
-		g.add((activity_iri, RDF.type, CANON.MetadataEnrichment))
-		g.add((activity_iri, PROV.generated, enr_iri))
+		store.add(
+			ox.Quad(
+				activity_iri,
+				ox.NamedNode(RDF + "type"),
+				ox.NamedNode(CANON + "MetadataEnrichment"),
+			)
+		)
+		store.add(ox.Quad(activity_iri, ox.NamedNode(PROV + "generated"), enr_iri))
 		if enr_rec.retrieved_at is not None:
-			g.add(
-				(
+			store.add(
+				ox.Quad(
 					activity_iri,
-					PROV.startedAtTime,
-					Literal(enr_rec.retrieved_at, datatype=XSD.dateTime),
+					ox.NamedNode(PROV + "startedAtTime"),
+					ox.Literal(str(enr_rec.retrieved_at), datatype=ox.NamedNode(XSD + "dateTime")),
 				)
 			)
-		if getattr(enr_rec, "request_uri", None) and enr_rec.request_uri is not None:
-			g.add((activity_iri, PROV.used, URIRef(enr_rec.request_uri)))
+		if enr_rec.request_uri is not None:
+			store.add(
+				ox.Quad(
+					activity_iri,
+					ox.NamedNode(PROV + "used"),
+					ox.NamedNode(enr_rec.request_uri),
+				)
+			)
 		if self.software_agent_iri:
-			g.add((activity_iri, PROV.wasAssociatedWith, self.software_agent_iri))
+			store.add(
+				ox.Quad(
+					activity_iri,
+					ox.NamedNode(PROV + "wasAssociatedWith"),
+					self.software_agent_iri,
+				)
+			)
 
 		return activity_iri
 
-	def _add_reification(
-		self, g: Graph, subj: URIRef, pred: URIRef, obj: URIRef | Literal, enr_iri: URIRef
-	) -> BNode:
-		stmt = BNode()
-		g.add((stmt, RDF.type, RDF.Statement))
-		g.add((stmt, RDF.subject, subj))
-		g.add((stmt, RDF.predicate, pred))
-		g.add((stmt, RDF.object, obj))
-		g.add((stmt, CANON.hasEnrichment, enr_iri))
-
-		return stmt
-
 	def _add_geo_enrichment(
-		self, g: Graph, work_iri: URIRef, author_iri: URIRef, geo_rec: GeoRecord
-	) -> tuple[URIRef, URIRef]:
-		enr_iri = URIRef(f"urn:uuid:{geo_rec.uuid}")
-		location_iri = self._add_location(g, geo_rec)
-
+		self,
+		store: ox.Store,
+		work_iri: ox.NamedNode,
+		author_iri: ox.NamedNode,
+		geo_rec: GeoRecord,
+	) -> tuple[ox.NamedNode, ox.NamedNode]:
+		enr_iri = ox.NamedNode(f"urn:uuid:{geo_rec.uuid}")
+		location_iri = self._add_location(store, geo_rec)
 		entry = _GEO.get(geo_rec.interpretation_context)
 		canon_property, subject_type = (
 			entry[geo_rec.evidence_level] if entry else ("assumedGeolocation", "work")
 		)
 		subject_iri = author_iri if subject_type == "author" else work_iri
-		predicate_iri = CANON[canon_property]
-
-		g.add((subject_iri, predicate_iri, location_iri))
-		self._add_reification(g, subject_iri, predicate_iri, location_iri, enr_iri)
-
-		activity_iri = self._add_enrichment_provenance(g, enr_iri, geo_rec)
-		return enr_iri, activity_iri
+		self._annotate(
+			store, subject_iri, ox.NamedNode(CANON + canon_property), location_iri, enr_iri
+		)
+		return enr_iri, self._add_enrichment_provenance(store, enr_iri, geo_rec)
 
 	def _add_author_enrichment(
-		self, g: Graph, author_iri: URIRef, author_rec: AuthorRecord
-	) -> tuple[URIRef, URIRef]:
-		enr_iri = URIRef(f"urn:uuid:{author_rec.uuid}")
+		self,
+		store: ox.Store,
+		author_iri: ox.NamedNode,
+		author_rec: AuthorRecord,
+	) -> tuple[ox.NamedNode, ox.NamedNode]:
 		if author_rec.gender_uri is None:
 			raise ValueError("gender_uri must be set")
-
-		gender_iri = URIRef(author_rec.gender_uri)
-
+		enr_iri = ox.NamedNode(f"urn:uuid:{author_rec.uuid}")
 		entry = _AUTHOR.get(author_rec.interpretation_context)
 		canon_property, _ = (
 			entry[author_rec.evidence_level] if entry else ("assumedGender", "author")
 		)
-		predicate_iri = CANON[canon_property]
-
-		g.add((author_iri, predicate_iri, gender_iri))
-		self._add_reification(g, author_iri, predicate_iri, gender_iri, enr_iri)
-
-		activity_iri = self._add_enrichment_provenance(g, enr_iri, author_rec)
-		return enr_iri, activity_iri
+		self._annotate(
+			store,
+			author_iri,
+			ox.NamedNode(CANON + canon_property),
+			ox.NamedNode(author_rec.gender_uri),
+			enr_iri,
+		)
+		return enr_iri, self._add_enrichment_provenance(store, enr_iri, author_rec)
 
 	def _add_popularity_enrichment(
-		self, g: Graph, work_iri: URIRef, pop_rec: PopularityRecord
-	) -> tuple[URIRef, URIRef]:
-		enr_iri = URIRef(f"urn:uuid:{pop_rec.uuid}")
-
+		self,
+		store: ox.Store,
+		work_iri: ox.NamedNode,
+		pop_rec: PopularityRecord,
+	) -> tuple[ox.NamedNode, ox.NamedNode]:
+		enr_iri = ox.NamedNode(f"urn:uuid:{pop_rec.uuid}")
 		if pop_rec.value is not None:
-			canon_property = _POPULARITY[pop_rec.metric]
-			predicate_iri = CANON[canon_property]
-			value_literal = Literal(pop_rec.value, datatype=XSD.integer)
-
-			g.add((work_iri, predicate_iri, value_literal))
-			self._add_reification(g, work_iri, predicate_iri, value_literal, enr_iri)
-
-		activity_iri = self._add_enrichment_provenance(g, enr_iri, pop_rec)
-		return enr_iri, activity_iri
+			self._annotate(
+				store,
+				work_iri,
+				ox.NamedNode(CANON + _POPULARITY[pop_rec.metric]),
+				ox.Literal(str(pop_rec.value), datatype=ox.NamedNode(XSD + "integer")),
+				enr_iri,
+			)
+		return enr_iri, self._add_enrichment_provenance(store, enr_iri, pop_rec)
 
 	def _add_readerstats_enrichment(
-		self, g: Graph, work_iri: URIRef, rs_rec: ReaderstatsRecord
-	) -> tuple[URIRef, URIRef]:
-		enr_iri = URIRef(f"urn:uuid:{rs_rec.uuid}")
-
+		self,
+		store: ox.Store,
+		work_iri: ox.NamedNode,
+		rs_rec: ReaderstatsRecord,
+	) -> tuple[ox.NamedNode, ox.NamedNode]:
+		enr_iri = ox.NamedNode(f"urn:uuid:{rs_rec.uuid}")
 		if rs_rec.avg_rating is not None:
-			value_literal = Literal(rs_rec.avg_rating, datatype=XSD.decimal)
-			g.add((work_iri, CANON.ratingValue, value_literal))
-			self._add_reification(g, work_iri, CANON.ratingValue, value_literal, enr_iri)
-
+			self._annotate(
+				store,
+				work_iri,
+				ox.NamedNode(CANON + "ratingValue"),
+				ox.Literal(str(rs_rec.avg_rating), datatype=ox.NamedNode(XSD + "decimal")),
+				enr_iri,
+			)
 		if rs_rec.ratings_count is not None:
-			count_literal = Literal(rs_rec.ratings_count, datatype=XSD.integer)
-			g.add((work_iri, CANON.ratingCount, count_literal))
-			self._add_reification(g, work_iri, CANON.ratingCount, count_literal, enr_iri)
-
-		activity_iri = self._add_enrichment_provenance(g, enr_iri, rs_rec)
-		return enr_iri, activity_iri
+			self._annotate(
+				store,
+				work_iri,
+				ox.NamedNode(CANON + "ratingCount"),
+				ox.Literal(str(rs_rec.ratings_count), datatype=ox.NamedNode(XSD + "integer")),
+				enr_iri,
+			)
+		return enr_iri, self._add_enrichment_provenance(store, enr_iri, rs_rec)
