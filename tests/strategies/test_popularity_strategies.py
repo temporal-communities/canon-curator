@@ -7,6 +7,7 @@ from canon_curator.enrich.strategies.popularity import wikidata_qrank, wikidata_
 def test_wikidata_qrank_success(mocker, base_record, expected_qrank_record):
 	mock_client = mocker.Mock()
 	mock_client.get_qrank.return_value = 100
+	mock_client.download_url = "https://qrank.toolforge.org/download/qrank.csv.gz"
 	mocker.patch(
 		"canon_curator.enrich.strategies.popularity.wikidata_qrank.get_qrank_client",
 		return_value=mock_client,

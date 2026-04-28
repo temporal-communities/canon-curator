@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import logging
-import json
 from collections.abc import Sequence
 
 import pyoxigraph as ox
 
 from canon_curator.load.base_exporter import BaseExporter
+from canon_curator.load.namespaces import PREFIXES
 from canon_curator.load.reification import convert_to_reified_store
 from canon_curator.load.rdf_graph_builder import RDFGraphBuilder
 from canon_curator.models.records import EnrichedWorkRecord
@@ -14,29 +14,27 @@ from canon_curator.models.records import EnrichedWorkRecord
 logger = logging.getLogger(__name__)
 
 
-class JSONLDExporter(BaseExporter):
-	"""Export EnrichedWorkRecord instances as JSON-LD.
+class TurtleExporter(BaseExporter):
+	"""Export EnrichedWorkRecord instances as Turtle.
 
-	- provenance_format="star": represent provenance in RDF 1.2 syntax and attempt
-	  serializing with pyoxigraph's JSON-LD serializer. Raises OSError until Oxigraph
-	  adds RDF 1.2 support in JSON-LD.
-	- provenance_format="reified" (default): represent provenance with classic
-	  rdf:Statement reification syntax. This option requires converting the pyoxigraph
-	  store prior to serialization. Output is JSON-LD 1.0 compatible.
+	- provenance_format="star" (default): represent provenance in RDF 1.2 syntax and serialize with
+	  pyoxigraph's Turtle serializer.
+	- provenance_format="reified": represent provenance with classic rdf:Statement reification syntax.
+	  This option requires converting the pyoxigraph store prior to serialization.
 	"""
 
 	def __init__(
 		self,
 		filename: str,
-		canon_list_iri: str = "",
+		canon_list_iri: str,
 		canon_list_name: str | None = None,
 		canon_list_metadata_iri: str | None = None,
 		software_agent_iri: str | None = "https://github.com/temporal-communities/canon-curator/",
 		out_dir: str = ".",
-		provenance_format: str = "reified",
+		provenance_format: str = "star",
 	) -> None:
 		super().__init__(filename=filename, out_dir=out_dir)
-		self.filename = filename if str(filename).endswith(".jsonld") else f"{filename}.jsonld"
+		self.filename = filename if str(filename).endswith(".ttl") else f"{filename}.ttl"
 		self.provenance_format = provenance_format
 		self._builder = RDFGraphBuilder(
 			canon_list_iri=canon_list_iri,
@@ -47,10 +45,10 @@ class JSONLDExporter(BaseExporter):
 
 	def _serialize_star(self, store: ox.Store) -> str:
 		store_dump = store.dump(
-			format=ox.RdfFormat.JSON_LD,
+			format=ox.RdfFormat.TURTLE,
 			from_graph=ox.DefaultGraph(),
+			prefixes=PREFIXES,
 		)
-
 		if store_dump is None:
 			raise RuntimeError("store.dump() returned None unexpectedly")
 
@@ -59,10 +57,10 @@ class JSONLDExporter(BaseExporter):
 	def _serialize_reified(self, store: ox.Store) -> str:
 		reified_store = convert_to_reified_store(store)
 		store_dump = reified_store.dump(
-			format=ox.RdfFormat.JSON_LD,
+			format=ox.RdfFormat.TURTLE,
 			from_graph=ox.DefaultGraph(),
+			prefixes=PREFIXES,
 		)
-
 		if store_dump is None:
 			raise RuntimeError("store.dump() returned None unexpectedly")
 
@@ -73,9 +71,9 @@ class JSONLDExporter(BaseExporter):
 			raise RuntimeError("Export failed. Use as context manager or call open() first.")
 		store = self._builder.build(records)
 		serialized = (
-			self._serialize_star(store)
-			if self.provenance_format == "star"
-			else self._serialize_reified(store)
+			self._serialize_reified(store)
+			if self.provenance_format == "reified"
+			else self._serialize_star(store)
 		)
-		self.file.write(json.dumps(json.loads(serialized), ensure_ascii=False, indent=2))
-		logger.info("Exported JSON-LD (%s) to %s", self.provenance_format, self.output_path)
+		self.file.write(serialized)
+		logger.info("Exported RDF (%s) to %s", self.provenance_format, self.output_path)

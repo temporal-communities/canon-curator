@@ -4,100 +4,125 @@
 
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dct:     <http://purl.org/dc/terms/> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
-@prefix schema:  <http://schema.org/> .
+@prefix place:   <http://www.ontologydesignpatterns.org/cp/owl/place.owl#> .
+@prefix geo:     <http://www.w3.org/2003/01/geo/wgs84_pos#> .
 @prefix prov:    <http://www.w3.org/ns/prov#> .
-@prefix lrm:     <http://iflastandards.info/ns/lrm/lrmoo/> .
-@prefix homoit:  <https://homosaurus.org/v4/> .
-@prefix hico:    <http://purl.org/emmedi/hico/2020-03-31> .
-@prefix canon:   <https://github.com/temporal-communities/canon-curator/> .
-@prefix ex:      <http://example.org/> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix canon:   <https://github.com/temporal-communities/canon-curator/ontology/> .
 
+<https://github.com/temporal-communities/canon-curator/ontology/> a owl:Ontology ;
+    rdfs:label "Canon Ontology" .
 
 ### CLASSES
 
-canon:Work a rdfs:Class ;
-    rdfs:subClassOf prov:Entity, lrm:Expression ;
-    rdfs:label "Work Record"@en .
+# Main classes
 
-canon:CanonList a rdfs:Class ;
-    rdfs:subClassOf prov:Entity , lrm:Expression ;
+canon:CanonList a owl:Class ;
+    rdfs:subClassOf dct:Collection ;
     rdfs:label "Canon List"@en .
 
-canon:EnrichmentRecord a rdfs:Class ;
-    rdfs:subClassOf prov:Entity , lrm:Expression ;
+canon:Work a owl:Class ;
+    rdfs:subClassOf dct:BibliographicResource ;
+    rdfs:label "Work"@en .
+
+canon:Author a owl:Class ;
+    rdfs:subClassOf dct:Agent ;
+    rdfs:label "Author"@en .
+
+canon:EnrichmentRecord a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
     rdfs:label "Enrichment Record"@en .
 
-canon:GenderRecord rdfs:subClassOf canon:EnrichmentRecord .
-canon:GeoRecord rdfs:subClassOf canon:EnrichmentRecord .
+canon:Location a owl:Class ;
+    rdfs:subClassOf place:Place ;
+    rdfs:label "Place"@en ;
+    rdfs:comment "Represents physical places with latitude and longitude, or references to norm data." . # from Viewsari
 
-canon:Author a rdfs:Class ;
-    rdfs:subClassOf prov:Person, schema:Person ; # prov:Agent, schema:Person # does it make sense to inherit from both?
-    rdfs:label "Author"@en .
+# Activities
+
+canon:EnrichmentActivity a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Enrichment activity"@en .
+
+canon:EntityReconciliation a owl:Class ;
+    rdfs:subClassOf canon:EnrichmentActivity ;
+    rdfs:label "Entity reconciliation"@en .
+
+canon:MetadataEnrichment a owl:Class ;
+    rdfs:subClassOf canon:EnrichmentActivity ;
+    rdfs:label "Metadata enrichment"@en .
 
 
 ### PROPERTIES
 
+# Object Properties
 
-canon:hasEnrichment a rdf:Property ;
+canon:hasEnrichment a owl:ObjectProperty ;
     rdfs:label "has enrichment"@en ;
-    rdfs:domain canon:Work, canon:Author ; # option a) make this rdfs:Resource: has to be more permissive to avoid false rdfs reasoning that quoted triple is canon:Work; option b) remove hasEnrichment property from Work and use it only for quoted triples; option c) introduce another property just for quoted triples
     rdfs:range canon:EnrichmentRecord .
 
-canon:geolocation a rdf:Property ;
+canon:hasMetadata a owl:ObjectProperty ;
+    rdfs:label "has metadata record"@en ;
+    rdfs:domain canon:CanonList .
+
+canon:geolocation a owl:ObjectProperty ;
     rdfs:label "Geolocation"@en ;
-    rdfs:domain canon:Work, canon:Author ; # or set domain in subproperties??
-    rdfs:range schema:Place ; # previously schema:GeoCoordinates. Change range,or enforce this to expect just a URI in SHACL. Or make it schema:Place ?
-    rdfs:subPropertyOf schema:location . # does it make sense to add this? It only makes sense when range is schema:Place because schema:location expects schema:Place
+    rdfs:subPropertyOf place:hasLocation ;
+    rdfs:range canon:Location .
 
-canon:authorGeolocation a rdf:Property ; # Wikidata P19; should this property have domain canon:Author instead of canon:Work??
-    rdfs:label "Geolocation related to author, f.e. Wikidata P19"@en ; # this should go in description
-    rdfs:subPropertyOf canon:geolocation .
+canon:authorBirthPlace a owl:ObjectProperty ;
+    rdfs:label "Place of birth of author"@en ;
+    rdfs:subPropertyOf canon:geolocation ;
+    rdfs:domain canon:Author ;
+    rdfs:comment "F.e. Wikidata P19" .
 
-canon:authorBirthPlace a rdf:Property ;
-    rdfs:label "Place of birth of author, f.e. Wikidata P19"@en ; # this should go in description
-    rdfs:subPropertyOf canon:authorGeolocation ;
-    schema:equal <https://www.wikidata.org/wiki/Property:P19> . # schema:equal correct here?
+canon:workOrigin a owl:ObjectProperty ;
+    rdfs:label "Place of origin of a work"@en ;
+    rdfs:subPropertyOf canon:geolocation ;
+    rdfs:domain canon:Work ;
+    rdfs:comment "F.e. Wikidata P495" .
 
-canon:workGeolocation a rdf:Property ; # Wikidata P495
-    rdfs:label "Geolocation related to work, f.e. Wikidata P495"@en ; # this should go in description
-    rdfs:subPropertyOf canon:geolocation .
-
-canon:workOrigin a rdf:Property ;
-    rdfs:label "Place of origin of the work, f.e. Wikidata P495"@en ; # this should go in description
-    rdfs:subPropertyOf canon:workGeolocation ;
-    schema:equal <https://www.wikidata.org/wiki/Property:P495> . # schema:equal correct here?
-
-canon:languageGeolocation a rdf:Property ;
-    rdfs:label "Geolocation based on language of text or author"@en ;
-    rdfs:subPropertyOf canon:geolocation .
-
-canon:authorLanguage a rdf:Property ;
-    rdfs:label "Language attributed to the author"@en ;
-    rdfs:subPropertyOf canon:languageGeolocation, canon:authorGeolocation . # is this a good idea?
-
-canon:workLanguage a rdf:Property ;
-    rdfs:label "Language attributed to the text"@en ;
-    rdfs:subPropertyOf canon:languageGeolocation, canon:workGeolocation . # is this a good idea?
-
-canon:assumedGeolocation a rdf:Property ;
+canon:assumedGeolocation a owl:ObjectProperty ;
     rdfs:label "Assumed geolocation with unclear provenance"@en ;
     rdfs:subPropertyOf canon:geolocation .
 
-canon:gender a rdf:Property ;
+canon:gender a owl:ObjectProperty ;
     rdfs:label "Gender"@en ;
-    rdfs:domain canon:Author ;
-    rdfs:range homoit:Gender .
+    rdfs:domain canon:Author .
 
-canon:assumedGender a rdf:Property ;
+canon:assumedGender a owl:ObjectProperty ;
     rdfs:label "Assumed Gender"@en ;
     rdfs:subPropertyOf canon:gender .
 
-canon:recordedGender a rdf:Property ;
+canon:recordedGender a owl:ObjectProperty ;
     rdfs:label "Recorded Gender"@en ;
     rdfs:subPropertyOf canon:gender .
 
-canon:selfIdentifiedGender a rdf:Property ;
+canon:selfIdentifiedGender a owl:ObjectProperty ;
     rdfs:label "Self-identified Gender"@en ;
     rdfs:subPropertyOf canon:gender .
+
+# Data Properties
+
+canon:popularityMetric a owl:DatatypeProperty ;
+    rdfs:label "Popularity metric"@en ;
+    rdfs:range xsd:decimal .
+
+canon:qRank a owl:DatatypeProperty ;
+    rdfs:label "QRank rank"@en ;
+    rdfs:range xsd:integer .
+
+canon:sitelinkCount a owl:DatatypeProperty ;
+    rdfs:label "Sitelink count"@en ;
+    rdfs:range xsd:integer .
+
+canon:ratingValue a owl:DatatypeProperty ;
+    rdfs:label "Rating value"@en ;
+    rdfs:range xsd:decimal .
+
+canon:ratingCount a owl:DatatypeProperty ;
+    rdfs:label "Rating count"@en ;
+    rdfs:range xsd:integer .
 

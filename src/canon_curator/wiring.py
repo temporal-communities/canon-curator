@@ -1,6 +1,6 @@
 from collections.abc import Callable, Sequence
 
-from canon_curator.enrich.chains import StrategyChain, FirstSuccessChain
+from canon_curator.enrich.chains import StrategyChain, FirstSuccessChain, KeepAllChain
 from canon_curator.enrich.enrichers import (
 	GeodataEnricher,
 	AuthordataEnricher,
@@ -23,6 +23,11 @@ STRATEGY_MAP: dict[str, Strategy] = {
 	"goodreads": StrategyRegistry.GOODREADS,
 }
 
+_CHAIN_CONSTRUCTORS: dict[str, type[StrategyChain]] = {
+	"first-success": FirstSuccessChain,
+	"keep-all": KeepAllChain,
+}
+
 
 def _resolve_strategies(strategy_names: list[str]) -> list[Strategy]:
 	strategies = []
@@ -34,13 +39,11 @@ def _resolve_strategies(strategy_names: list[str]) -> list[Strategy]:
 
 
 def _build_strategy_chain(user_config: dict, section: str) -> StrategyChain:
-	strategy_names = user_config[section]["strategies"]
-	strategies = _resolve_strategies(strategy_names)
+	strategies = _resolve_strategies(user_config[section]["strategies"])
 	chain_type = user_config[section]["chain"]
-	if chain_type == "first-success":
-		return FirstSuccessChain(strategies)
-	else:
+	if chain_type not in _CHAIN_CONSTRUCTORS:
 		raise ValueError(f"{chain_type} is not a valid strategy chain")
+	return _CHAIN_CONSTRUCTORS[chain_type](strategies)
 
 
 def build_geodata_enricher(user_config: dict) -> GeodataEnricher:

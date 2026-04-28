@@ -14,7 +14,7 @@ from canon_curator.enrich.enrichers import (
 	PopularityEnricher,
 	ReaderstatEnricher,
 )
-from canon_curator.enrich.chains import FirstSuccessChain
+from canon_curator.enrich.chains import FirstSuccessChain, KeepAllChain
 
 
 @pytest.fixture
@@ -39,14 +39,25 @@ def bad_config():
 		(build_geodata_enricher, GeodataEnricher),
 		(build_authordata_enricher, AuthordataEnricher),
 		(build_readerstats_enricher, ReaderstatEnricher),
-		(build_popularity_enricher, PopularityEnricher),
 	],
 )
-def test_build_enrichers(builder, expected_class, good_config):
+def test_build_enrichers_with_first_success_chain(builder, expected_class, good_config):
 	enricher = builder(user_config=good_config)
 
 	assert isinstance(enricher, expected_class)
 	assert isinstance(enricher.chain, FirstSuccessChain)
+
+@pytest.mark.parametrize(
+	"builder, expected_class",
+	[
+		(build_popularity_enricher, PopularityEnricher),
+	],
+)
+def test_build_enrichers_with_keep_all_chain(builder, expected_class, good_config):
+	enricher = builder(user_config=good_config)
+
+	assert isinstance(enricher, expected_class)
+	assert isinstance(enricher.chain, KeepAllChain)
 
 
 def test_build_geodata_enricher_invalid(bad_config):

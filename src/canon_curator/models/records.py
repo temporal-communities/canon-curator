@@ -27,9 +27,9 @@ class BaseWorkRecord:
 
 
 @dataclass
-class EnrichedWorkRecord(BaseWorkRecord):
+class EnrichedWorkRecord:
 	base_data: BaseWorkRecord = field(default_factory=BaseWorkRecord)
-	authordata: AuthorRecord = field(default_factory=AuthorRecord)
-	geodata: GeoRecord = field(default_factory=GeoRecord)
-	wd_metrics: PopularityRecord = field(default_factory=PopularityRecord)
-	readerstats: ReaderstatsRecord = field(default_factory=ReaderstatsRecord)
+	authordata: list[AuthorRecord] = field(default_factory=list)
+	geodata: list[GeoRecord] = field(default_factory=list)
+	wd_metrics: list[PopularityRecord] = field(default_factory=list)
+	readerstats: list[ReaderstatsRecord] = field(default_factory=list)

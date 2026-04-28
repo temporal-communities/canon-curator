@@ -11,6 +11,7 @@ from tests.testdata.goodreads import (
 def test_goodreads_success(mocker, base_record, expected_readerstats_record):
 	mock_client = mocker.Mock()
 	mock_client.fetch_readerstats.return_value = EXPECTED_READERSTATS
+	mock_client.goodreads_base = "https://www.goodreads.com/"
 	mocker.patch(
 		"canon_curator.enrich.strategies.readerstats.goodreads.get_goodreads_client",
 		return_value=mock_client,

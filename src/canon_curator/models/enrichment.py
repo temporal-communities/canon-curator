@@ -1,9 +1,9 @@
 from __future__ import annotations
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from datetime import datetime
 from enum import StrEnum
 from typing import Self
-from uuid import UUID
+from uuid import UUID, uuid4
 
 
 class EvidenceLevel(StrEnum):
@@ -29,8 +29,26 @@ class EvidenceLevel(StrEnum):
 	INFERRED = "inferred"
 
 
+class PopularityMetric(StrEnum):
+	"""
+	Registry of popularity metrics used to qualify popularity records
+
+	- 'qrank' is intended for the QRank ranking signal for Wikidata entities, for more information see https://qrank.toolforge.org/.
+	- 'sitelinks' is intended for the count of sitelinks associate with a Wikidata item, for instance, the number of Wikipedia language
+	editions. For more information see  https://www.wikidata.org/wiki/Help:Sitelinks
+
+	If the metric is not further specified, the field 'metric' in the PopularityMetric dataclass should be left on the default value of None.
+	"""
+
+	QRANK = "qrank"
+	SITELINKS = "sitelinks"
+
+
 @dataclass
 class EnrichmentRecord:
+	uuid: UUID = field(
+		default_factory=lambda: uuid4()
+	)  # note: lambda is necessary for patching, do not remove
 	work_uuid: UUID | None = None
 
 	@classmethod
@@ -43,14 +61,14 @@ class EnrichmentRecord:
 		return all(
 			getattr(self, f.name) is None
 			for f in fields(self)
-			if f.name not in {"work_uuid", "retrieved_at"}
+			if f.name not in {"work_uuid", "uuid", "retrieved_at"}
 		)
 
 	def merge(self, other: Self) -> Self:
 		"""Combine two records field-wise, filling missing values from other."""
 		merged = {}
-		for field in fields(self):
-			merged[field.name] = getattr(self, field.name) or getattr(other, field.name)
+		for f in fields(self):
+			merged[f.name] = getattr(self, f.name) or getattr(other, f.name)
 		return type(self)(**merged)
 
 
@@ -85,8 +103,10 @@ class AuthorRecord(EnrichmentRecord):
 
 @dataclass
 class PopularityRecord(EnrichmentRecord):
-	sitelinks_count: int | None = None
-	q_rank: int | None = None
+	value: int | None = None
+	metric: PopularityMetric | None = None
+	source_db: str | None = None
+	request_uri: str | None = None
 	retrieved_at: datetime | None = None
 
 
@@ -94,5 +114,6 @@ class PopularityRecord(EnrichmentRecord):
 class ReaderstatsRecord(EnrichmentRecord):
 	avg_rating: float | None = None
 	ratings_count: int | None = None
-	source: str | None = None
+	source_db: str | None = None
+	request_uri: str | None = None
 	retrieved_at: datetime | None = None

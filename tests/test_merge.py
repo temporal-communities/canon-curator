@@ -3,13 +3,6 @@ import pytest
 from canon_curator.merge import merge_records
 
 
-def test_merge_enrichment_records_success(
-	expected_sitelinks_record, expected_qrank_record, expected_merged_popularity_record
-):
-	assert (
-		expected_sitelinks_record.merge(expected_qrank_record) == expected_merged_popularity_record
-	)
-
 
 def test_merge_enrichment_records_returns_empty(expected_empty_popularity_record):
 	assert (

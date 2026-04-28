@@ -1,5 +1,4 @@
 from __future__ import annotations
-from functools import reduce
 from collections.abc import Callable, Sequence
 from abc import ABC, abstractmethod
 
@@ -37,20 +36,17 @@ class FirstSuccessChain[T: EnrichmentRecord](StrategyChain[T]):
 		return enrichment_recs
 
 
-class MergeFieldsChain[T: EnrichmentRecord](StrategyChain[T]):
+class KeepAllChain[T: EnrichmentRecord](StrategyChain[T]):
 	"""
-	Runs a sequence of enrichment strategies and merges the resulting enrichment records
-	field-wise into a single EnrichmentRecord.
-	Intended for cases where different strategies enrich different fields (e.g. wikidata_qrank and wikidata_sitelinks).
+	Runs a sequence of enrichment strategies and returns all results. Each strategy
+	is applied to the given record in the order provided. The chain stops when all
+	strategies have been tried.
 	"""
 
 	def run(self, record: BaseWorkRecord) -> Sequence[T]:
-		"""Assumes strategy returns a list of enrichment records and merges all non-empty results."""
+		"""Assumes strategy returns a list of enrichment records and returns all results."""
 		enrichment_recs: list[T] = []
 		for strategy in self.strategies:
 			enrichment_recs.extend(strategy(record))
 
-		if all(rec.is_empty() for rec in enrichment_recs):
-			return [enrichment_recs[0]]
-
-		return [reduce(lambda a, b: a.merge(b), enrichment_recs)]
+		return enrichment_recs
