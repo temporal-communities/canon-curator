@@ -63,7 +63,7 @@ canon:hasEnrichment a owl:ObjectProperty ;
     rdfs:label "has enrichment"@en ;
     rdfs:range canon:EnrichmentRecord .
 
-canon:Metadata a owl:ObjectProperty ;
+canon:hasMetadata a owl:ObjectProperty ;
     rdfs:label "has metadata record"@en ;
     rdfs:domain canon:CanonList .
 
