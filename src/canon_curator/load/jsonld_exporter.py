@@ -1,57 +1,81 @@
+from __future__ import annotations
+
+import logging
 import json
-from pathlib import Path
 from collections.abc import Sequence
 
-from canon_curator.models import EnrichedWorkRecord
-from canon_curator.load import BaseExporter
-from canon_curator.validate import validate_shacl
+import pyoxigraph as ox
 
+from canon_curator.load.base_exporter import BaseExporter
+from canon_curator.load.reification import convert_to_reified_store
+from canon_curator.load.rdf_graph_builder import RDFGraphBuilder
+from canon_curator.models.records import EnrichedWorkRecord
 
-class ValidationError(Exception):
-	"""Raised when JSON-LD graph fails SHACL validation."""
-
-	pass
+logger = logging.getLogger(__name__)
 
 
 class JSONLDExporter(BaseExporter):
-	def __init__(self, context_path: str | Path, shapes_path: str | Path) -> None:
-		self.context_path = context_path
-		self.shapes_path = shapes_path
+	"""Export EnrichedWorkRecord instances as JSON-LD.
 
-	def _read_jsonld_context(self) -> dict:
-		context_str = Path(self.context_path).read_text(encoding="utf-8")
-		return json.loads(context_str)
+	- provenance_format="star": represent provenance in RDF 1.2 syntax and attempt
+	  serializing with pyoxigraph's JSON-LD serializer. Raises OSError until Oxigraph
+	  adds RDF 1.2 support in JSON-LD.
+	- provenance_format="reified" (default): represent provenance with classic
+	  rdf:Statement reification syntax. This option requires converting the pyoxigraph
+	  store prior to serialization. Output is JSON-LD 1.0 compatible.
+	"""
 
-	def _make_graph(self, records: Sequence[EnrichedWorkRecord]) -> dict:
-		context_dict = self._read_jsonld_context()
-
-		graph_nodes = []
-		for record in records:
-			node = {
-				"@id": str(record.base_data.uuid)
-				# build the rest of the graph
-			}
-			graph_nodes.append(node)
-
-		graph = {"@context": context_dict, "@graph": graph_nodes}
-
-		return graph
-
-	def export(
+	def __init__(
 		self,
-		records: Sequence[EnrichedWorkRecord],
-		out_dir: str | Path,
-		filename: str = "graph.jsonld",
+		filename: str,
+		canon_list_iri: str = "",
+		canon_list_name: str | None = None,
+		canon_list_metadata_iri: str | None = None,
+		software_agent_iri: str | None = "https://github.com/temporal-communities/canon-curator/",
+		out_dir: str = ".",
+		provenance_format: str = "reified",
 	) -> None:
-		"""Build JSON-LD, validate against SHACL, and write to out_dir/filename."""
+		super().__init__(filename=filename, out_dir=out_dir)
+		self.filename = filename if str(filename).endswith(".jsonld") else f"{filename}.jsonld"
+		self.provenance_format = provenance_format
+		self._builder = RDFGraphBuilder(
+			canon_list_iri=canon_list_iri,
+			canon_list_name=canon_list_name,
+			canon_list_metadata_iri=canon_list_metadata_iri,
+			software_agent_iri=software_agent_iri,
+		)
 
-		graph_obj = self._make_graph(records)
-		graph_jsonld = json.dumps(graph_obj, ensure_ascii=False, separators=(",", ":"))
+	def _serialize_star(self, store: ox.Store) -> str:
+		store_dump = store.dump(
+			format=ox.RdfFormat.JSON_LD,
+			from_graph=ox.DefaultGraph(),
+		)
 
-		conforms, result_graph, result_text = validate_shacl(graph_jsonld, self.shapes_path)
+		if store_dump is None:
+			raise RuntimeError("store.dump() returned None unexpectedly")
 
-		if not conforms:
-			raise ValidationError(f"Could not validate graph. Validation report: \n {result_text}")
+		return store_dump.decode()
 
-		out_path = Path(out_dir) / filename
-		out_path.write_text(graph_jsonld, encoding="utf-8")
+	def _serialize_reified(self, store: ox.Store) -> str:
+		reified_store = convert_to_reified_store(store)
+		store_dump = reified_store.dump(
+			format=ox.RdfFormat.JSON_LD,
+			from_graph=ox.DefaultGraph(),
+		)
+
+		if store_dump is None:
+			raise RuntimeError("store.dump() returned None unexpectedly")
+
+		return store_dump.decode()
+
+	def export(self, records: Sequence[EnrichedWorkRecord]) -> None:
+		if self.file is None or self.file.closed:
+			raise RuntimeError("Export failed. Use as context manager or call open() first.")
+		store = self._builder.build(records)
+		serialized = (
+			self._serialize_star(store)
+			if self.provenance_format == "star"
+			else self._serialize_reified(store)
+		)
+		self.file.write(json.dumps(json.loads(serialized), ensure_ascii=False, indent=2))
+		logger.info("Exported JSON-LD (%s) to %s", self.provenance_format, self.output_path)
