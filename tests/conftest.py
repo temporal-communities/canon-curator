@@ -353,3 +353,30 @@ def expected_empty_enriched_work_record(base_record):
 		wd_metrics=[_make_empty_popularity_record(rec_uuid=_POPULARITY_UUID)],
 		readerstats=[_make_empty_readerstats_record(rec_uuid=_READERSTATS_UUID)],
 	)
+
+
+@pytest.fixture
+def make_wikidata_p19():
+	def strategy(record):
+		return [GeoRecord.empty()]
+
+	strategy.name = "wikidata_p19"
+	return strategy
+
+
+@pytest.fixture
+def make_gnd_gender():
+	def strategy(record):
+		return [AuthorRecord.empty()]
+
+	strategy.name = "gnd_gender"
+	return strategy
+
+
+@pytest.fixture
+def make_wikidata_p21():
+	def strategy(record):
+		return [AuthorRecord.empty()]
+
+	strategy.name = "wikidata_p21"
+	return strategy
