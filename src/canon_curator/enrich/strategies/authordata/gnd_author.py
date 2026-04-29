@@ -2,7 +2,7 @@ from datetime import datetime, UTC
 from uuid import UUID
 import logging
 
-from canon_curator.enrich.strategies.providers import get_gnd_client
+from canon_curator.enrich.clients import GNDClient
 from canon_curator.enrich.clients.gnd_client import GNDProperties
 from canon_curator.models import AuthorRecord, BaseWorkRecord
 
@@ -12,8 +12,9 @@ logger = logging.getLogger(__name__)
 _GND_GENDER_GUIDE = "https://wiki.dnb.de/download/attachments/50759357/375.pdf"
 
 
-def _gnd_author(resource_id: str, work_uuid: UUID | None, property_name: str) -> list[AuthorRecord]:
-	client = get_gnd_client()
+def _gnd_author(
+	resource_id: str, work_uuid: UUID | None, property_name: str, client: GNDClient
+) -> list[AuthorRecord]:
 	retrieval_time = datetime.now(UTC)
 	authordata = client.fetch_property(resource_id, property_name)
 	entries = authordata.get("entries")
@@ -38,14 +39,17 @@ def _gnd_author(resource_id: str, work_uuid: UUID | None, property_name: str) ->
 	]
 
 
-def gnd_gender(record: BaseWorkRecord) -> list[AuthorRecord]:
+def gnd_gender(record: BaseWorkRecord, client: GNDClient) -> list[AuthorRecord]:
 	if not record.author_gnd_id:
 		logger.warning(
 			f"Skipping author data enrichment: no author_gnd_id for {record.uuid} ({record.title})"
 		)
 		return [AuthorRecord.empty()]
 	gender_recs = _gnd_author(
-		record.author_gnd_id, work_uuid=record.uuid, property_name=GNDProperties.GENDER
+		record.author_gnd_id,
+		work_uuid=record.uuid,
+		property_name=GNDProperties.GENDER,
+		client=client,
 	)
 	if not gender_recs:
 		logger.warning(f"Could not retrieve author data for {record.author_gnd_id}")

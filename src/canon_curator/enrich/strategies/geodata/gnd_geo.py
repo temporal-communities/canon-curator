@@ -1,7 +1,7 @@
 from datetime import datetime, UTC
 import logging
 
-from canon_curator.enrich.strategies.providers import get_gnd_client
+from canon_curator.enrich.clients import GNDClient
 from canon_curator.enrich.clients.gnd_client import GNDProperties
 from canon_curator.models import BaseWorkRecord, GeoRecord
 
@@ -12,8 +12,7 @@ _DNB_ID = "d-nb.info/gnd/"
 logger = logging.getLogger(__name__)
 
 
-def _gnd_geo(resource_id: str, property_name: str) -> list[GeoRecord]:
-	client = get_gnd_client()
+def _gnd_geo(resource_id: str, property_name: str, client: GNDClient) -> list[GeoRecord]:
 	retrieval_time = datetime.now(UTC)
 	geodata = client.fetch_property(resource_id, property_name)
 	logger.debug(f"Retrieved geodata {geodata} for {resource_id}")
@@ -60,13 +59,13 @@ def _gnd_geo(resource_id: str, property_name: str) -> list[GeoRecord]:
 	return records
 
 
-def gnd_geolabel(record: BaseWorkRecord) -> list[GeoRecord]:
+def gnd_geolabel(record: BaseWorkRecord, client: GNDClient) -> list[GeoRecord]:
 	if not record.work_gnd_id:
 		logger.warning(
 			f"Skipping geodata enrichment: no work_gnd_id for {record.uuid} ({record.title})"
 		)
 		return [GeoRecord.empty()]
-	geocode_recs = _gnd_geo(record.work_gnd_id, property_name=GNDProperties.GEOCODE)
+	geocode_recs = _gnd_geo(record.work_gnd_id, property_name=GNDProperties.GEOCODE, client=client)
 	if not geocode_recs:
 		logger.warning(f"Could not retrieve geodata for {record.work_gnd_id}")
 		return [GeoRecord.empty()]
@@ -75,7 +74,9 @@ def gnd_geolabel(record: BaseWorkRecord) -> list[GeoRecord]:
 		if not geocode_rec.geo_id:
 			logger.warning("Skipping coordinate lookup: no geo_id on geocode record")
 			continue
-		coords_rec = _gnd_geo(geocode_rec.geo_id, property_name=GNDProperties.GEOMETRY)
+		coords_rec = _gnd_geo(
+			geocode_rec.geo_id, property_name=GNDProperties.GEOMETRY, client=client
+		)
 		if not coords_rec:
 			logger.warning("Could not retrieve coordinate info from GND")
 			continue
