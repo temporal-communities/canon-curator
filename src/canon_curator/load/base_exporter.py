@@ -8,7 +8,7 @@ from canon_curator.models.records import EnrichedWorkRecord
 
 
 class BaseExporter(ABC):
-	def __init__(self, filename: str = "enriched_data", out_dir: str = ".") -> None:
+	def __init__(self, filename: str = "enriched_data", out_dir: Path | str = ".") -> None:
 		self.filename = filename
 		self.out_dir = Path(out_dir)
 		self.output_path: Path | None = None

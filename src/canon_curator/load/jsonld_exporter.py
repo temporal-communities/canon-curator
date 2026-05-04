@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import json
 from collections.abc import Sequence
+from pathlib import Path
 
 import pyoxigraph as ox
 
@@ -32,7 +33,7 @@ class JSONLDExporter(BaseExporter):
 		canon_list_name: str | None = None,
 		canon_list_metadata_iri: str | None = None,
 		software_agent_iri: str | None = "https://github.com/temporal-communities/canon-curator/",
-		out_dir: str = ".",
+		out_dir: Path | str = ".",
 		provenance_format: str = "reified",
 	) -> None:
 		super().__init__(filename=filename, out_dir=out_dir)
