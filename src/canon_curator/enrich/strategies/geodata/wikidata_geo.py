@@ -13,14 +13,13 @@ def _wikidata_geo(
 	property_id: str,
 	work_uuid: UUID | None,
 	client: WikidataClient,
-	lang: str = "en",
 ) -> list[GeoRecord]:
 	"""Map Wikidata claims to GeoRecords."""
 	if not entity_id:
 		logger.warning("Skipping Wikidata geo enrichment for %s: empty entity_id", property_id)
 		return []
 
-	property_dict = client.fetch_property(entity_id, property_id, lang=lang)
+	property_dict = client.fetch_property(entity_id, property_id)
 	claims = property_dict.get("claims", [])
 	if not claims:
 		logger.info(
@@ -42,7 +41,7 @@ def _wikidata_geo(
 
 		lat = None
 		lon = None
-		coord_dict = client.fetch_property(geo_id, "P625", lang=lang)
+		coord_dict = client.fetch_property(geo_id, "P625")
 		for c in coord_dict.get("claims", []):
 			lat_val = c.get("latitude")
 			lon_val = c.get("longitude")

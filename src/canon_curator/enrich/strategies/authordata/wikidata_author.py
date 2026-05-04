@@ -13,14 +13,13 @@ def _wikidata_author(
 	property_id: str,
 	work_uuid: UUID | None,
 	client: WikidataClient,
-	lang: str = "en",
 ) -> list[AuthorRecord]:
 	"""Map Wikidata claims to AuthorRecords."""
 	if not entity_id:
 		logger.warning("Skipping Wikidata author enrichment for %s: empty entity_id", property_id)
 		return []
 
-	property_dict = client.fetch_property(entity_id, property_id, lang=lang)
+	property_dict = client.fetch_property(entity_id, property_id)
 	claims = property_dict.get("claims", [])
 	if not claims:
 		logger.info("No claims for %s on %s; returning empty AuthorRecord.", property_id, entity_id)
