@@ -36,10 +36,12 @@ class BaseEnricher[T: EnrichmentRecord]:
 				f"Allowed: {', '.join(self.ALLOWED_STRATEGIES)}"
 			)
 
-	def enrich(self, records: Iterable[BaseWorkRecord]) -> dict[UUID | None, Sequence[T]]:
+	def enrich(self, records: Iterable[BaseWorkRecord]) -> dict[UUID, Sequence[T]]:
 		"""Applies the strategy chain to each record and collect results."""
-		enrichment_recs: dict[UUID | None, Sequence[T]] = {}
+		enrichment_recs: dict[UUID, Sequence[T]] = {}
 		for rec in records:
+			if rec.uuid is None: 
+				raise ValueError(f"Cannot enrich record without UUID. Record: {rec}")
 			enrichment_recs[rec.uuid] = self.chain.run(rec)
 		return enrichment_recs
 
@@ -69,7 +71,7 @@ class PopularityEnricher(BaseEnricher[PopularityRecord]):
 
 	def enrich(
 		self, records: Iterable[BaseWorkRecord]
-	) -> dict[UUID | None, Sequence[PopularityRecord]]:
+	) -> dict[UUID, Sequence[PopularityRecord]]:
 		if self._qrank_client is not None:
 			qids = [rec.work_qid for rec in records if rec.work_qid]
 			self._qrank_client.prefetch(qids)
