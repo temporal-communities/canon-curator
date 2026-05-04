@@ -17,7 +17,7 @@ readerstats:
     - goodreads
 
 popularity:
-  chain: first-success
+  chain: keep-all
   strategies:
     - wikidata_sitelinks
     - wikidata_qrank
