@@ -16,7 +16,6 @@ dependencies = [
     "prefect>=3.4.19",
     "pyoxigraph>=0.5.7",
     "pyshacl>=0.30.1",
-    "pywikibot>=10.7.0",
     "rdflib>=7.2.1",
     "shapely>=2.1.2",
 ]
