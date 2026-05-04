@@ -1,5 +1,15 @@
+import argparse
+import logging
+import yaml
+from datetime import timedelta
+from pathlib import Path
+from collections.abc import Iterable, Mapping, Sequence
+from uuid import UUID
+
 from prefect import flow, task
-from collections.abc import Iterable
+from prefect.futures import wait
+from prefect.tasks import task_input_hash
+
 
 from canon_curator.models import (
 	BaseWorkRecord,
@@ -9,57 +19,272 @@ from canon_curator.models import (
 	PopularityRecord,
 	ReaderstatsRecord,
 )
+from canon_curator.extract import CSVReader
+from canon_curator.merge import merge_records
+from canon_curator.wiring import (
+	make_strategy_registry,
+	build_geodata_enricher,
+	build_authordata_enricher,
+	build_popularity_enricher,
+	build_readerstats_enricher,
+)
+from canon_curator.enrich.enrichers import (
+	GeodataEnricher,
+	AuthordataEnricher,
+	PopularityEnricher,
+	ReaderstatEnricher,
+)
+from canon_curator.enrich.clients import (
+	GNDClient,
+	WikidataClient,
+	QRankClient,
+	GoodreadsClient,
+)
+from canon_curator.load import JSONLinesExporter, JSONLDExporter, TurtleExporter
+
+logger = logging.getLogger(__name__)
+
+
+def setup_logging():
+	logging.basicConfig(
+		level=logging.INFO,
+		format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+	)
+
+	logging.getLogger("canon_curator").setLevel(logging.INFO)
+	logging.getLogger("prefect").setLevel(logging.INFO)
+
+
+def parse_args() -> argparse.Namespace:
+	parser = argparse.ArgumentParser(
+		description="Enrich a canon list TSV with geodata, author data, popularity, and reader statistics.",
+		formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+	)
+	parser.add_argument("--input-file", required=True, help="Path to the input TSV file.")
+	parser.add_argument(
+		"--out-dir",
+		type=Path,
+		default=Path(__file__).parent,
+		help="Directory where output files will be written.",
+	)
+	parser.add_argument(
+		"--output-filename", required=True, help="Base name for output files (without extension)."
+	)
+	parser.add_argument(
+		"--canon-list-iri",
+		required=False,
+		help="Optional override for canon list IRI.",
+	)
+	parser.add_argument(
+		"--canon-list-name", required=True, help="Human-readable name of the canon list."
+	)
+	parser.add_argument(
+		"--canon-list-metadata-iri", required=True, help="IRI identifying the canon list metadata."
+	)
+	parser.add_argument(
+		"--config-file",
+		type=Path,
+		default=Path(__file__).parent / "config.yml",
+		help="Path to the enrichment strategy config file.",
+	)
+	return parser.parse_args()
 
 
 @task
-def extract() -> Iterable[BaseWorkRecord]:
+def load_config(config_file: Path) -> dict:
+	"""Load and parse the YAML enrichment strategy config."""
+	with open(config_file, encoding="utf-8") as f:
+		return yaml.safe_load(f)
+
+
+@task
+def extract(input_file: Path | str) -> Iterable[BaseWorkRecord]:
 	"""Read input files for (batch) processing."""
-	raise NotImplementedError
+	with CSVReader(input_file=input_file, delimiter="\t") as reader:
+		return reader.read_file()
 
 
-@task()
-def enrich_geo() -> Iterable[GeoRecord]:
+@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+def enrich_geo(
+	records: Iterable[BaseWorkRecord],
+	enricher: GeodataEnricher,
+) -> Mapping[UUID, Sequence[GeoRecord]]:
 	"""Retrieve geodata for BaseWorkRecords."""
-	raise NotImplementedError
+	return enricher.enrich(records)
 
 
-@task()
-def enrich_author() -> Iterable[AuthorRecord]:
+@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+def enrich_author(
+	records: Iterable[BaseWorkRecord],
+	enricher: AuthordataEnricher,
+) -> Mapping[UUID, Sequence[AuthorRecord]]:
 	"""Retrieve author related data for BaseWorkRecords."""
-	raise NotImplementedError
+	return enricher.enrich(records)
 
 
-@task()
-def enrich_popularity() -> Iterable[PopularityRecord]:
+@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+def enrich_popularity(
+	records: Iterable[BaseWorkRecord],
+	enricher: PopularityEnricher,
+) -> Mapping[UUID, Sequence[PopularityRecord]]:
 	"""Retrieve popularity metrics for BaseWorkRecords."""
-	raise NotImplementedError
+	return enricher.enrich(records)
 
 
-@task()
-def enrich_readerstats() -> Iterable[ReaderstatsRecord]:
+@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+def enrich_readerstats(
+	records: Iterable[BaseWorkRecord],
+	enricher: ReaderstatEnricher,
+) -> Mapping[UUID, Sequence[ReaderstatsRecord]]:
 	"""Retrieve reader statistics for BaseWorkRecords."""
-	raise NotImplementedError
+	return enricher.enrich(records)
 
 
 @task
-def merge() -> Iterable[EnrichedWorkRecord]:
+def merge(
+	base_recs: Iterable[BaseWorkRecord],
+	geodata: Mapping[UUID, Sequence[GeoRecord]],
+	authordata: Mapping[UUID, Sequence[AuthorRecord]],
+	popularity: Mapping[UUID, Sequence[PopularityRecord]],
+	readerstats: Mapping[UUID, Sequence[ReaderstatsRecord]],
+) -> Iterable[EnrichedWorkRecord]:
 	"""Merge each BaseWorkRecord with EnrichmentRecords"""
-	raise NotImplementedError
+	return merge_records(
+		base_recs=base_recs,
+		geodata=geodata,
+		authordata=authordata,
+		popularity=popularity,
+		readerstats=readerstats,
+	)
 
 
 @task
-def load() -> None:
-	"""Parse EnrichmentRecords into the output format, validate and write to output directory on success."""
-	raise NotImplementedError
+def load(
+	records,
+	filename: str,
+	out_dir: Path | str,
+	canon_list_iri: str,
+	canon_list_name: str,
+	canon_list_metadata_iri: str,
+	output_format: str = "turtle",
+	provenance_format: str = "star",
+) -> None:
+	if output_format == "jsonlines":
+		with JSONLinesExporter(filename=filename, out_dir=out_dir) as exporter:
+			exporter.export(records)
+	elif output_format == "jsonld":
+		with JSONLDExporter(
+			filename=filename,
+			out_dir=out_dir,
+			canon_list_iri=canon_list_iri,
+			canon_list_name=canon_list_name,
+			canon_list_metadata_iri=canon_list_metadata_iri,
+			provenance_format=provenance_format,
+		) as exporter:
+			exporter.export(records)
+	elif output_format == "turtle":
+		with TurtleExporter(
+			filename=filename,
+			out_dir=out_dir,
+			canon_list_iri=canon_list_iri,
+			canon_list_name=canon_list_name,
+			canon_list_metadata_iri=canon_list_metadata_iri,
+			provenance_format=provenance_format,
+		) as exporter:
+			exporter.export(records)
+	else:
+		raise ValueError("Output format not supported at this time.")
 
 
 @flow(name="enrichment-pipeline")
-def enrichment_pipeline() -> None:
-	"""
-	Read user config, call build functions from wiring.py to build enrichers and call tasks.
-	"""
-	raise NotImplementedError
+def enrichment_pipeline(
+	input_file: Path | str,
+	config_file: Path,
+	out_dir: Path,
+	output_filename: str,
+	canon_list_metadata_iri: str,
+	canon_list_iri: str,
+	canon_list_name: str,
+) -> None:
+	"""Read user config, call build functions from wiring.py to build enrichers and call tasks."""
+	with open(config_file, encoding="utf-8") as f:
+		user_config = yaml.safe_load(f)
+
+	with (
+		QRankClient() as qrank_client,
+		WikidataClient() as wikidata_client,
+		GNDClient() as gnd_client,
+		GoodreadsClient() as goodreads_client,
+	):
+		registry = make_strategy_registry(
+			gnd_client, wikidata_client, qrank_client, goodreads_client
+		)
+		geodata_enricher = build_geodata_enricher(registry, user_config)
+		authordata_enricher = build_authordata_enricher(registry, user_config)
+		popularity_enricher = build_popularity_enricher(registry, user_config, qrank_client)
+		readerstats_enricher = build_readerstats_enricher(registry, user_config)
+
+		base_records = extract(input_file)
+
+		geodata_future = enrich_geo.submit(base_records, geodata_enricher)
+		authordata_future = enrich_author.submit(base_records, authordata_enricher)
+		popularity_future = enrich_popularity.submit(base_records, popularity_enricher)
+		readerstats_future = enrich_readerstats.submit(base_records, readerstats_enricher)
+
+		wait([geodata_future, authordata_future, popularity_future, readerstats_future])  # type: ignore
+
+		enriched = merge(
+			base_recs=base_records,
+			geodata=geodata_future.result(),
+			authordata=authordata_future.result(),
+			popularity=popularity_future.result(),
+			readerstats=readerstats_future.result(),
+		)
+
+		load_futures = [
+			load.submit(
+				enriched,
+				f"{output_filename}.jsonl",
+				out_dir,
+				canon_list_iri,
+				canon_list_name,
+				canon_list_metadata_iri,
+				output_format="jsonlines",
+			),
+			load.submit(
+				enriched,
+				f"{output_filename}.jsonld",
+				out_dir,
+				canon_list_iri,
+				canon_list_name,
+				canon_list_metadata_iri,
+				output_format="jsonld",
+				provenance_format="reified",
+			),
+			load.submit(
+				enriched,
+				f"{output_filename}.ttl",
+				out_dir,
+				canon_list_iri,
+				canon_list_name,
+				canon_list_metadata_iri,
+				output_format="turtle",
+			),
+		]
+		wait(load_futures)
 
 
 if __name__ == "__main__":
-	enrichment_pipeline()
+	setup_logging()
+	args = parse_args()
+	canon_list_iri = args.canon_list_iri or str(args.input_file)
+
+	enrichment_pipeline(
+		input_file=args.input_file,
+		config_file=args.config_file,
+		out_dir=args.out_dir,
+		output_filename=args.output_filename,
+		canon_list_metadata_iri=args.canon_list_metadata_iri,
+		canon_list_iri=canon_list_iri,
+		canon_list_name=args.canon_list_name,
+	)
