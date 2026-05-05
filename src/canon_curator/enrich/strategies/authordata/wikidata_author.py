@@ -2,22 +2,24 @@ from datetime import datetime, UTC
 from uuid import UUID
 import logging
 
-from canon_curator.enrich.strategies.providers import get_wikidata_client
+from canon_curator.enrich.clients import WikidataClient
 from canon_curator.models import AuthorRecord, BaseWorkRecord, EvidenceLevel
 
 logger = logging.getLogger(__name__)
 
 
 def _wikidata_author(
-	entity_id: str, property_id: str, work_uuid: UUID | None, lang: str = "en"
+	entity_id: str,
+	property_id: str,
+	work_uuid: UUID | None,
+	client: WikidataClient,
 ) -> list[AuthorRecord]:
 	"""Map Wikidata claims to AuthorRecords."""
 	if not entity_id:
 		logger.warning("Skipping Wikidata author enrichment for %s: empty entity_id", property_id)
 		return []
 
-	client = get_wikidata_client()
-	property_dict = client.fetch_property(entity_id, property_id, lang=lang)
+	property_dict = client.fetch_property(entity_id, property_id)
 	claims = property_dict.get("claims", [])
 	if not claims:
 		logger.info("No claims for %s on %s; returning empty AuthorRecord.", property_id, entity_id)
@@ -68,7 +70,7 @@ def _wikidata_author(
 	return author_records
 
 
-def wikidata_p21(record: BaseWorkRecord) -> list[AuthorRecord]:
+def wikidata_p21(record: BaseWorkRecord, client: WikidataClient) -> list[AuthorRecord]:
 	"""Strategy for Wikidata P21 (sex or gender) on the author entity."""
 	if not record.author_qid:
 		logger.warning(
@@ -78,7 +80,9 @@ def wikidata_p21(record: BaseWorkRecord) -> list[AuthorRecord]:
 		)
 		return [AuthorRecord.empty()]
 
-	author_recs = _wikidata_author(record.author_qid, work_uuid=record.uuid, property_id="P21")
+	author_recs = _wikidata_author(
+		record.author_qid, work_uuid=record.uuid, property_id="P21", client=client
+	)
 	if not author_recs:
 		return [AuthorRecord.empty()]
 

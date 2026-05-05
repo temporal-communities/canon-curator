@@ -1,49 +1,15 @@
-class MockDataSite:
-	"""Mocks pywikibot.site.DataSite"""
+import json
+from pathlib import Path
 
-	def __init__(self, code: str, fam: str) -> None:
-		pass
-
-
-class Snak:
-	"""Wraps snak dict to expose toJSON method expected by WikidataClient _fetch_sources method"""
-
-	def __init__(self, data: dict) -> None:
-		self._data = data
-
-	def toJSON(self) -> dict:
-		return {"datavalue": self._data["datavalue"]}
+Q17892_PATH = Path(__file__).parent.parent / "testdata" / "Q17892.json"
+with open(Q17892_PATH, "r", encoding="utf-8") as f: 
+	ENTITY_Q17892 = json.load(f)
+Q1018197_PATH = Path(__file__).parent.parent / "testdata" / "Q1018197.json"
+with open(Q1018197_PATH, "r", encoding="utf-8") as f: 
+	ENTITY_Q1018197 = json.load(f)
 
 
-class MockClaim:
-	"""Mocks pywikibot.Claim"""
-
-	def __init__(self, target, sources: list, rank: str = "normal") -> None:
-		self.target = target
-		self.sources = sources
-		self.rank = rank
-
-	def getTarget(self):
-		return self.target
-
-	def getSources(self):
-		return self.sources
-
-	@classmethod
-	def fromJSON(cls, site, data: dict) -> "MockClaim":
-		sources = [
-			{
-				pid: [Snak(s) for s in ref["snaks"][pid]]
-				for pid in ref.get("snaks-order", ref["snaks"])
-			}
-			for ref in data.get("references", [])
-		]
-		return cls(target=None, sources=sources, rank=data.get("rank", "normal"))
-
-
-CLAIM_BIRTH_PLACE_ERESOS = MockClaim.fromJSON(
-	MockDataSite("wikidata", "wikidata"),
-	{
+CLAIM_BIRTH_PLACE_ERESOS = {
 		"mainsnak": {
 			"snaktype": "value",
 			"property": "P19",
@@ -109,12 +75,9 @@ CLAIM_BIRTH_PLACE_ERESOS = MockClaim.fromJSON(
 				"hash": "424742ebe03951785dc139cf15ae2978ea2bda9f",
 			}
 		],
-	},
-)
+	}
 
-CLAIM_BIRTH_PLACE_LESBOS = MockClaim.fromJSON(
-	MockDataSite("wikidata", "wikidata"),
-	{
+CLAIM_BIRTH_PLACE_LESBOS = {
 		"mainsnak": {
 			"snaktype": "value",
 			"property": "P19",
@@ -328,12 +291,9 @@ CLAIM_BIRTH_PLACE_LESBOS = MockClaim.fromJSON(
 				"hash": "fec3181138965b64bed52f00efbe006128d8aa68",
 			},
 		],
-	},
-)
+	}
 
-CLAIM_BIRTH_PLACE_MYTILENE = MockClaim.fromJSON(
-	MockDataSite("wikidata", "wikidata"),
-	{
+CLAIM_BIRTH_PLACE_MYTILENE = {
 		"mainsnak": {
 			"snaktype": "value",
 			"property": "P19",
@@ -346,12 +306,9 @@ CLAIM_BIRTH_PLACE_MYTILENE = MockClaim.fromJSON(
 		"type": "statement",
 		"id": "Q17892$AFBBEE43-9929-4647-9E99-315216B32D90",
 		"rank": "normal",
-	},
-)
+	}
 
-CLAIM_COORDINATES = MockClaim.fromJSON(
-	MockDataSite("wikidata", "wikidata"),
-	{
+CLAIM_COORDINATES = {
 		"mainsnak": {
 			"snaktype": "value",
 			"property": "P625",
@@ -370,8 +327,7 @@ CLAIM_COORDINATES = MockClaim.fromJSON(
 		"type": "statement",
 		"id": "q1018197$0E3D30CD-AF3D-4A68-8B9F-14BD4CE8B91E",
 		"rank": "normal",
-	},
-)
+	}
 
 SAMPLE_CLAIMS = [
 	CLAIM_BIRTH_PLACE_ERESOS,
@@ -380,11 +336,11 @@ SAMPLE_CLAIMS = [
 	CLAIM_COORDINATES,
 ]
 
-BIRTH_PLACE_CLAIMS = [
-	CLAIM_BIRTH_PLACE_ERESOS,
-	CLAIM_BIRTH_PLACE_LESBOS,
-	CLAIM_BIRTH_PLACE_MYTILENE,
-]
+
+COORDINATES_CLAIMS = ENTITY_Q1018197["entities"]["Q1018197"]["claims"]["P625"]
+
+BIRTH_PLACE_CLAIMS = ENTITY_Q17892["entities"]["Q17892"]["claims"]["P19"]
+
 
 EXPECTED_REFERENCES_ERESOS = [
 	{
@@ -398,7 +354,13 @@ EXPECTED_REFERENCES_ERESOS = [
 ]
 
 EXPECTED_REFERENCES_LESBOS = [
-	{"source": None, "qualifiers": {"P957": "0-19-924017-5"}},
+	{
+		"source": None, 
+		"qualifiers": {
+			"P957": "0-19-924017-5",
+			"P1476": "Greek Lyric Poetry: A Commentary on Selected Larger Pieces",
+		},
+	},
 	{
 		"source": "https://www.wikidata.org/entity/Q731361",
 		"qualifiers": {
@@ -433,6 +395,12 @@ EXPECTED_REFERENCES = [
 	EXPECTED_REFERENCES_EMPTY,
 ]
 
+EXPECTED_DATAVALUE_ERESOS = {"type": "item", "label": None, "entity_id": "Q1018197"}
+EXPECTED_DATAVALUE_LESBOS = {"type": "item", "label": None, "entity_id": "Q128087"}
+EXPECTED_DATAVALUE_MYTILENE = {"type": "item", "label": None, "entity_id": "Q42295059"}
+EXPECTED_DATAVALUE_COORDINATES = {"type": "coordinates", "latitude": 39.169897, "longitude": 25.933797}
+
+
 EXPECTED_TARGET_ERESOS = {"type": "item", "label": "Eresos", "entity_id": "Q1018197"}
 EXPECTED_TARGET_LESBOS = {"type": "item", "label": "Lesbos", "entity_id": "Q128087"}
 EXPECTED_TARGET_MYTILENE = {"type": "item", "label": "Mytilene", "entity_id": "Q42295059"}
@@ -451,12 +419,11 @@ EXPECTED_TARGETS = [
 	EXPECTED_TARGET_COORDINATES,
 ]
 
-EXPECTED_EMPTY_RESULT = {"entity": "Q17892", "property": "P20", "lang": "en", "claims": []}
+EXPECTED_EMPTY_RESULT = {"entity": "Q17892", "property": "P20", "claims": []}
 
 EXPECTED_FETCH_PROPERTY_RESULT_BIRTH_PLACE = {
 	"entity": "Q17892",
 	"property": "P19",
-	"lang": "en",
 	"claims": [
 		{
 			"type": "item",
@@ -479,7 +446,13 @@ EXPECTED_FETCH_PROPERTY_RESULT_BIRTH_PLACE = {
 			"label": "Lesbos",
 			"entity_id": "Q128087",
 			"sources": [
-				{"source": None, "qualifiers": {"P957": "0-19-924017-5"}},
+				{
+					"source": None, 
+					"qualifiers": {
+						"P957": "0-19-924017-5",
+						"P1476": "Greek Lyric Poetry: A Commentary on Selected Larger Pieces",
+					},
+				},
 				{
 					"source": "https://www.wikidata.org/entity/Q731361",
 					"qualifiers": {
@@ -520,7 +493,6 @@ EXPECTED_FETCH_PROPERTY_RESULT_BIRTH_PLACE = {
 EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_ERESOS = {
 	"entity": "Q1018197",
 	"property": "P625",
-	"lang": "en",
 	"claims": [
 		{
 			"type": "coordinates",
@@ -535,7 +507,6 @@ EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_ERESOS = {
 EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_LESBOS = {
 	"entity": "Q128087",
 	"property": "P625",
-	"lang": "en",
 	"claims": [
 		{
 			"type": "coordinates",
@@ -550,7 +521,6 @@ EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_LESBOS = {
 EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_MYTILENE = {
 	"entity": "Q42295059",
 	"property": "P625",
-	"lang": "en",
 	"claims": [
 		{
 			"type": "coordinates",
@@ -572,7 +542,6 @@ EXPECTED_FETCH_PROPERTY_RESULTS = [
 EXPECTED_FETCH_PROPERTY_RESULT_GENDER = {
 	"entity": "Q40909",
 	"property": "P21",
-	"lang": "en",
 	"claims": [
 		{
 			"type": "item",

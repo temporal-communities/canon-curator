@@ -29,11 +29,7 @@ def test_wikidata_geo_success(
         EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_LESBOS,
         EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_MYTILENE,
     ]
-    mocker.patch(
-        "canon_curator.enrich.strategies.geodata.wikidata_geo.get_wikidata_client",
-        return_value=mock_client,
-    )
-    result = _wikidata_geo("Q17892", "P19", base_record.uuid)
+    result = _wikidata_geo("Q17892", "P19", base_record.uuid, client=mock_client)
     assert len(result) == 3
     assert result[0] == expected_geo_record_wikidata
     assert result[2] == expected_geo_record_wikidata_no_evidence
@@ -44,7 +40,7 @@ def test_wikidata_p19_returns_empty(mocker, base_record, expected_empty_geo_reco
     mocker.patch(
         "canon_curator.enrich.strategies.geodata.wikidata_geo._wikidata_geo", return_value=[]
     )
-    result = wikidata_p19(base_record)
+    result = wikidata_p19(base_record, client=mocker.Mock())
     assert result == [expected_empty_geo_record]
 
 
@@ -53,7 +49,7 @@ def test_wikidata_p495_returns_empty(mocker, base_record, expected_empty_geo_rec
     mocker.patch(
         "canon_curator.enrich.strategies.geodata.wikidata_geo._wikidata_geo", return_value=[]
     )
-    result = wikidata_p495(base_record)
+    result = wikidata_p495(base_record, client=mocker.Mock())
     assert result == [expected_empty_geo_record]
 
 
@@ -82,11 +78,7 @@ def test_gnd_geo_geocode_success(
     mock_client.lobid_base = "https://lobid.org/gnd/"
     mock_client.fetch_property.return_value = fetch_property_return
     mock_client.fetch_concept.return_value = fetch_concept_return
-    mocker.patch(
-        "canon_curator.enrich.strategies.geodata.gnd_geo.get_gnd_client",
-        return_value=mock_client,
-    )
-    result = _gnd_geo(resource_id, property_name)
+    result = _gnd_geo(resource_id, property_name, client=mock_client)
     assert len(result) == 1
     rec = result[0]
     assert rec.geo_id == expected_geo_record_gnd.geo_id
@@ -107,11 +99,7 @@ def test_gnd_geo_geometry_success(
     mock_client = mocker.Mock()
     mock_client.lobid_base = "https://lobid.org/gnd/"
     mock_client.fetch_property.return_value = fetch_property_return
-    mocker.patch(
-        "canon_curator.enrich.strategies.geodata.gnd_geo.get_gnd_client",
-        return_value=mock_client,
-    )
-    result = _gnd_geo(resource_id, property_name)
+    result = _gnd_geo(resource_id, property_name, client=mock_client)
     assert len(result) == 1
     rec = result[0]
     assert rec.lat == expected_geo_record_gnd.lat
@@ -127,9 +115,5 @@ def test_gnd_geolabel_success(mocker, base_record, expected_geo_record_gnd):
         EXPECTED_FETCH_PROPERTY_RETURN_GEOMETRY,
     ]
     mock_client.fetch_concept.return_value = EXPECTED_STATEMENTS_GEOLABEL_GB
-    mocker.patch(
-        "canon_curator.enrich.strategies.geodata.gnd_geo.get_gnd_client",
-        return_value=mock_client,
-    )
-    result = gnd_geolabel(base_record)
+    result = gnd_geolabel(base_record, client=mock_client)
     assert result == [expected_geo_record_gnd]

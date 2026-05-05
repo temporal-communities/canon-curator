@@ -52,18 +52,18 @@ def _annotation_triples(store: ox.Store) -> set[tuple[str, str, str, str]]:
         if (
             quad.predicate == has_enrichment
             and isinstance(quad.subject, ox.BlankNode)
-            and quad.subject.value in reifies
+            and quad.subject.value in triple_terms
         )
     }
     return {
         (
             triple_terms[bnode_id].subject.value,
-            triple_terms[bid].predicate.value,
-            str(triple_terms[bid].object),
-            enrichment_iris[bid],
+            triple_terms[bnode_id].predicate.value,
+            str(triple_terms[bnode_id].object),
+            enrichment_iris[bnode_id],
         )
-        for bid in triple_terms
-        if bid in enrichment_iris
+        for bnode_id in triple_terms
+        if bnode_id in enrichment_iris
     }
 
 def test_jsonlines_export_success(

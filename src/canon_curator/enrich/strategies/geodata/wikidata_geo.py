@@ -2,22 +2,24 @@ from datetime import datetime, UTC
 from uuid import UUID
 import logging
 
-from canon_curator.enrich.strategies.providers import get_wikidata_client
+from canon_curator.enrich.clients import WikidataClient
 from canon_curator.models import GeoRecord, BaseWorkRecord, EvidenceLevel
 
 logger = logging.getLogger(__name__)
 
 
 def _wikidata_geo(
-	entity_id: str, property_id: str, work_uuid: UUID | None, lang: str = "en"
+	entity_id: str,
+	property_id: str,
+	work_uuid: UUID | None,
+	client: WikidataClient,
 ) -> list[GeoRecord]:
 	"""Map Wikidata claims to GeoRecords."""
 	if not entity_id:
 		logger.warning("Skipping Wikidata geo enrichment for %s: empty entity_id", property_id)
 		return []
 
-	client = get_wikidata_client()
-	property_dict = client.fetch_property(entity_id, property_id, lang=lang)
+	property_dict = client.fetch_property(entity_id, property_id)
 	claims = property_dict.get("claims", [])
 	if not claims:
 		logger.info(
@@ -39,7 +41,7 @@ def _wikidata_geo(
 
 		lat = None
 		lon = None
-		coord_dict = client.fetch_property(geo_id, "P625", lang=lang)
+		coord_dict = client.fetch_property(geo_id, "P625")
 		for c in coord_dict.get("claims", []):
 			lat_val = c.get("latitude")
 			lon_val = c.get("longitude")
@@ -86,7 +88,7 @@ def _wikidata_geo(
 	return geo_records
 
 
-def wikidata_p19(record: BaseWorkRecord) -> list[GeoRecord]:
+def wikidata_p19(record: BaseWorkRecord, client: WikidataClient) -> list[GeoRecord]:
 	"""Strategy for Wikidata P19 (place of birth) on the author entity."""
 	if not record.author_qid:
 		logger.warning(
@@ -96,14 +98,16 @@ def wikidata_p19(record: BaseWorkRecord) -> list[GeoRecord]:
 		)
 		return [GeoRecord.empty()]
 
-	geo_recs = _wikidata_geo(record.author_qid, work_uuid=record.uuid, property_id="P19")
+	geo_recs = _wikidata_geo(
+		record.author_qid, work_uuid=record.uuid, property_id="P19", client=client
+	)
 	if not geo_recs:
 		return [GeoRecord.empty()]
 
 	return geo_recs
 
 
-def wikidata_p495(record: BaseWorkRecord) -> list[GeoRecord]:
+def wikidata_p495(record: BaseWorkRecord, client: WikidataClient) -> list[GeoRecord]:
 	"""Strategy for Wikidata P495 (country of origin) on the work entity."""
 	if not record.work_qid:
 		logger.warning(
@@ -113,7 +117,9 @@ def wikidata_p495(record: BaseWorkRecord) -> list[GeoRecord]:
 		)
 		return [GeoRecord.empty()]
 
-	geo_recs = _wikidata_geo(record.work_qid, work_uuid=record.uuid, property_id="P495")
+	geo_recs = _wikidata_geo(
+		record.work_qid, work_uuid=record.uuid, property_id="P495", client=client
+	)
 	if not geo_recs:
 		return [GeoRecord.empty()]
 

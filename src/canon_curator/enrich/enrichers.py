@@ -2,7 +2,6 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from uuid import UUID
 
-from canon_curator.enrich.strategies.registry import Strategy, StrategyRegistry
 from canon_curator.models import (
 	BaseWorkRecord,
 	EnrichmentRecord,
@@ -12,7 +11,7 @@ from canon_curator.models import (
 	ReaderstatsRecord,
 )
 from canon_curator.enrich.chains import StrategyChain
-from canon_curator.enrich.strategies.providers import get_qrank_client
+from canon_curator.enrich.clients import QRankClient
 
 
 class BaseEnricher[T: EnrichmentRecord]:
@@ -22,61 +21,63 @@ class BaseEnricher[T: EnrichmentRecord]:
 	"""
 
 	name: str = "base"
-	ALLOWED_STRATEGIES: tuple[Strategy[T], ...] = ()
+	ALLOWED_STRATEGIES: frozenset[str] = frozenset()
 
-	def __init__(self, chain: StrategyChain):
+	def __init__(self, chain: StrategyChain, strategies: Iterable[str]):
 		self.chain = chain
+		self.strategies = strategies
 		self._validate()
 
 	def _validate(self) -> None:
-		for strategy in self.chain.strategies:
-			if strategy not in self.ALLOWED_STRATEGIES:
-				allowed_names = {s.__name__ for s in self.ALLOWED_STRATEGIES}
-				raise ValueError(
-					f"{strategy.__name__} is not a valid strategy for {self.__class__.__name__}. "
-					f"Allowed: {', '.join(allowed_names)}"
-				)
+		invalid_strategy = set(self.strategies) - set(self.ALLOWED_STRATEGIES)
+		if invalid_strategy:
+			raise ValueError(
+				f"{invalid_strategy} is not a valid strategy for {self.__class__.__name__}. "
+				f"Allowed: {', '.join(self.ALLOWED_STRATEGIES)}"
+			)
 
-	def enrich(self, records: Iterable[BaseWorkRecord]) -> dict[UUID | None, Sequence[T]]:
+	def enrich(self, records: Iterable[BaseWorkRecord]) -> dict[UUID, Sequence[T]]:
 		"""Applies the strategy chain to each record and collect results."""
-		enrichment_recs: dict[UUID | None, Sequence[T]] = {}
+		enrichment_recs: dict[UUID, Sequence[T]] = {}
 		for rec in records:
+			if rec.uuid is None: 
+				raise ValueError(f"Cannot enrich record without UUID. Record: {rec}")
 			enrichment_recs[rec.uuid] = self.chain.run(rec)
 		return enrichment_recs
 
 
 class GeodataEnricher(BaseEnricher[GeoRecord]):
 	name = "geodata"
-	ALLOWED_STRATEGIES: tuple[Strategy[GeoRecord], ...] = (
-		StrategyRegistry.GND_GEOLABEL,
-		StrategyRegistry.WIKIDATA_P19,
-		StrategyRegistry.WIKIDATA_P495,
-	)
+	ALLOWED_STRATEGIES = frozenset({"gnd_geolabel", "wikidata_p19", "wikidata_p495"})
 
 
 class AuthordataEnricher(BaseEnricher[AuthorRecord]):
 	name = "authordata"
-	ALLOWED_STRATEGIES: tuple[Strategy[AuthorRecord], ...] = (
-		StrategyRegistry.GND_GENDER,
-		StrategyRegistry.WIKIDATA_P21,
-	)
+	ALLOWED_STRATEGIES = frozenset({"gnd_gender", "wikidata_p21"})
 
 
 class PopularityEnricher(BaseEnricher[PopularityRecord]):
 	name = "popularity"
-	ALLOWED_STRATEGIES: tuple[Strategy[PopularityRecord], ...] = (
-		StrategyRegistry.WIKIDATA_SITELINKS,
-		StrategyRegistry.WIKIDATA_QRANK,
-	)
+	ALLOWED_STRATEGIES = frozenset({"wikidata_sitelinks", "wikidata_qrank"})
+
+	def __init__(
+		self,
+		chain: StrategyChain,
+		strategies: Iterable[str],
+		qrank_client: QRankClient | None = None,
+	) -> None:
+		super().__init__(chain, strategies)
+		self._qrank_client = qrank_client
 
 	def enrich(
 		self, records: Iterable[BaseWorkRecord]
-	) -> dict[UUID | None, Sequence[PopularityRecord]]:
-		qids = [rec.work_qid for rec in records if rec.work_qid]
-		get_qrank_client().prefetch(qids)
+	) -> dict[UUID, Sequence[PopularityRecord]]:
+		if self._qrank_client is not None:
+			qids = [rec.work_qid for rec in records if rec.work_qid]
+			self._qrank_client.prefetch(qids)
 		return super().enrich(records)
 
 
 class ReaderstatEnricher(BaseEnricher[ReaderstatsRecord]):
 	name = "readerstats"
-	ALLOWED_STRATEGIES: tuple[Strategy[ReaderstatsRecord], ...] = (StrategyRegistry.GOODREADS,)
+	ALLOWED_STRATEGIES = frozenset({"goodreads"})

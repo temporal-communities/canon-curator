@@ -3,17 +3,16 @@ from datetime import datetime, UTC
 from urllib.parse import urlparse
 
 from canon_curator.models import PopularityRecord, BaseWorkRecord, PopularityMetric
-from canon_curator.enrich.strategies.providers import get_qrank_client
+from canon_curator.enrich.clients import QRankClient
 
 logger = logging.getLogger(__name__)
 
 
-def wikidata_qrank(record: BaseWorkRecord) -> list[PopularityRecord]:
+def wikidata_qrank(record: BaseWorkRecord, client: QRankClient) -> list[PopularityRecord]:
 	if not record.work_qid:
 		logger.warning(f"No work_qid for {record.uuid} ({record.title}), skipping qrank.")
 		return [PopularityRecord.empty()]
 	retrieval_time = datetime.now(UTC)
-	client = get_qrank_client()
 	qrank = client.get_qrank(record.work_qid)
 	if not qrank:
 		logger.warning(f"Could not retrieve qrank for {record.work_qid}")

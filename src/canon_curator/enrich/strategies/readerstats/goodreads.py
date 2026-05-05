@@ -2,14 +2,15 @@ from datetime import datetime, UTC
 from uuid import UUID
 import logging
 
-from canon_curator.enrich.strategies.providers import get_goodreads_client
+from canon_curator.enrich.clients import GoodreadsClient
 from canon_curator.models import ReaderstatsRecord, BaseWorkRecord
 
 logger = logging.getLogger(__name__)
 
 
-def _goodreads(goodreads_id: str, work_uuid: UUID | None) -> list[ReaderstatsRecord]:
-	client = get_goodreads_client()
+def _goodreads(
+	goodreads_id: str, work_uuid: UUID | None, client: GoodreadsClient
+) -> list[ReaderstatsRecord]:
 	retrieval_time = datetime.now(UTC)
 	readerstats = client.fetch_readerstats(goodreads_id)
 	if all(value is None for value in readerstats.values()):
@@ -31,13 +32,17 @@ def _goodreads(goodreads_id: str, work_uuid: UUID | None) -> list[ReaderstatsRec
 	]
 
 
-def goodreads_readerstats(record: BaseWorkRecord) -> list[ReaderstatsRecord]:
+def goodreads_readerstats(
+	record: BaseWorkRecord, client: GoodreadsClient
+) -> list[ReaderstatsRecord]:
 	if not record.work_goodreads_id:
 		logger.warning(
 			f"Skipping readerstats enrichment: no work_goodreads_id for {record.uuid} ({record.title})"
 		)
 		return [ReaderstatsRecord.empty()]
-	readerstat_recs = _goodreads(goodreads_id=record.work_goodreads_id, work_uuid=record.uuid)
+	readerstat_recs = _goodreads(
+		goodreads_id=record.work_goodreads_id, work_uuid=record.uuid, client=client
+	)
 	if not readerstat_recs:
 		return [ReaderstatsRecord.empty()]
 	return readerstat_recs

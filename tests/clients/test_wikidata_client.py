@@ -1,17 +1,23 @@
 import pytest
-import pywikibot
 
 from canon_curator.enrich.clients import WikidataClient
 from tests.testdata.wikidata import (
+	ENTITY_Q17892,
+	ENTITY_Q1018197,
 	CLAIM_BIRTH_PLACE_ERESOS,
 	CLAIM_BIRTH_PLACE_LESBOS,
 	CLAIM_BIRTH_PLACE_MYTILENE,
 	CLAIM_COORDINATES,
 	BIRTH_PLACE_CLAIMS,
+	COORDINATES_CLAIMS,
 	SAMPLE_CLAIMS,
 	EXPECTED_REFERENCES_ERESOS,
 	EXPECTED_REFERENCES_LESBOS,
 	EXPECTED_REFERENCES_EMPTY,
+	EXPECTED_DATAVALUE_ERESOS,
+	EXPECTED_DATAVALUE_LESBOS,
+	EXPECTED_DATAVALUE_MYTILENE,
+	EXPECTED_DATAVALUE_COORDINATES,
 	EXPECTED_TARGET_ERESOS,
 	EXPECTED_TARGET_LESBOS,
 	EXPECTED_TARGET_MYTILENE,
@@ -28,51 +34,28 @@ def client():
 	return WikidataClient()
 
 
-def test_fetch_item_page_success(mocker, client):
-	client._repo = mocker.Mock()
-	mock_item = mocker.Mock()
-	mock_item.get = mocker.Mock()
-	mock_constructor = mocker.patch("pywikibot.ItemPage", return_value=mock_item)
-	result = client._fetch_item_page("Q219368")
-	mock_constructor.assert_called_once()
-	mock_item.get.assert_called_once()
-	assert result is mock_item
-
-
-def test_fetch_item_page_returns_none(mocker, client):
-	client._repo = mocker.Mock()
-	mock_item = mocker.Mock()
-	mocker.patch("pywikibot.ItemPage", return_value=mock_item)
-	mock_item.get.side_effect = pywikibot.exceptions.EntityTypeUnknownError("test")
-	result = client._fetch_item_page("Q219368")
-	mock_item.get.assert_called_once()
-	assert result is None
-
-
 @pytest.mark.parametrize(
-	"property_id, entity_id, claims_collection",
+	"property_id, entity_id, entity, claims_collection",
 	[
-		("P19", "Q17892", BIRTH_PLACE_CLAIMS),
-		("P625", "Q1018197", CLAIM_COORDINATES),
+		("P19", "Q17892", ENTITY_Q17892, BIRTH_PLACE_CLAIMS),
+		("P625", "Q1018197", ENTITY_Q1018197, COORDINATES_CLAIMS),
 	],
 )
-def test_fetch_claims_success(mocker, client, property_id, entity_id, claims_collection):
-	mock_claims = mocker.Mock()
-	mock_claims.claims = {property_id: claims_collection}
-	mocker.patch(
-		"canon_curator.enrich.clients.WikidataClient._fetch_item_page", return_value=mock_claims
-	)
-	result = client._fetch_claims(property_id, entity_id)
+def test_fetch_claims_success(client, property_id, entity_id, entity, claims_collection):
+	entity_data = entity.get("entities", {}).get(entity_id)
+	result = client._fetch_claims(entity_data, property_id)
 	assert result == claims_collection
 
 
-def test_fetch_claims_property_id_not_found(mocker, client):
-	mock_claims = mocker.Mock()
-	mock_claims.claims = {"P19": SAMPLE_CLAIMS}
-	mocker.patch(
-		"canon_curator.enrich.clients.WikidataClient._fetch_item_page", return_value=mock_claims
-	)
-	result = client._fetch_claims("P20", "Q17892")
+@pytest.mark.parametrize(
+	"property_id, entity_id, entity",
+	[
+		("P200", "Q17892", ENTITY_Q17892),
+	],
+)
+def test_fetch_claims_property_id_not_found(client, property_id, entity_id, entity):
+	entity_data = entity.get("entities", {}).get(entity_id)
+	result = client._fetch_claims(entity_data, property_id)
 	assert result is None
 
 
@@ -85,40 +68,22 @@ def test_fetch_claims_property_id_not_found(mocker, client):
 		(CLAIM_COORDINATES, EXPECTED_REFERENCES_EMPTY),
 	],
 )
-def test_fetch_sources_success(client, mocked_return, expected_return):
-	return_value = client._fetch_sources(mocked_return)
+def test_parse_references_success(client, mocked_return, expected_return):
+	return_value = client._parse_references(mocked_return)
 	assert return_value == expected_return
 
 
 @pytest.mark.parametrize(
 	"claim, expected",
 	[
-		(CLAIM_BIRTH_PLACE_ERESOS, EXPECTED_TARGET_ERESOS),
-		(CLAIM_BIRTH_PLACE_LESBOS, EXPECTED_TARGET_LESBOS),
-		(CLAIM_BIRTH_PLACE_MYTILENE, EXPECTED_TARGET_MYTILENE),
+		(CLAIM_BIRTH_PLACE_ERESOS, EXPECTED_DATAVALUE_ERESOS),
+		(CLAIM_BIRTH_PLACE_LESBOS, EXPECTED_DATAVALUE_LESBOS),
+		(CLAIM_BIRTH_PLACE_MYTILENE, EXPECTED_DATAVALUE_MYTILENE),
+		(CLAIM_COORDINATES, EXPECTED_DATAVALUE_COORDINATES),
 	],
 )
-def test_fetch_target_item_success(mocker, client, claim, expected):
-	mock_target = mocker.Mock(spec=["labels", "getID"])
-	mock_target.labels = {"en": expected["label"]}
-	mock_target.getID.return_value = expected["entity_id"]
-	mocker.patch.object(claim, "getTarget", return_value=mock_target)
-	result = client._fetch_target(claim, "en")
-	assert result == expected
-
-
-@pytest.mark.parametrize(
-	"claim, expected",
-	[
-		(CLAIM_COORDINATES, EXPECTED_TARGET_COORDINATES),
-	],
-)
-def test_fetch_target_coordinates_success(mocker, client, claim, expected):
-	mock_target = mocker.Mock(spec=["lat", "lon"])
-	mock_target.lat = expected["latitude"]
-	mock_target.lon = expected["longitude"]
-	mocker.patch.object(claim, "getTarget", return_value=mock_target)
-	result = client._fetch_target(claim, "en")
+def test_parse_datavalue_success(client, claim, expected):
+	result = client._parse_datavalue(claim["mainsnak"]["datavalue"])
 	assert result == expected
 
 
@@ -153,18 +118,29 @@ def test_fetch_property_success(
 	sources,
 	expected_return,
 ):
+
+	mocker.patch(
+		"canon_curator.enrich.clients.WikidataClient._fetch_entity",
+		return_value={"test_id": entity_id},
+	)
+
 	mocker.patch(
 		"canon_curator.enrich.clients.WikidataClient._fetch_claims",
 		return_value=claims_collection,
 	)
 
 	mocker.patch(
-		"canon_curator.enrich.clients.WikidataClient._fetch_target",
+		"canon_curator.enrich.clients.WikidataClient._parse_datavalue",
 		side_effect=targets,
 	)
 
 	mocker.patch(
-		"canon_curator.enrich.clients.WikidataClient._fetch_sources",
+		"canon_curator.enrich.clients.WikidataClient._fetch_label",
+		side_effect=["Eresos", "Lesbos", "Mytilene"],
+	)
+
+	mocker.patch(
+		"canon_curator.enrich.clients.WikidataClient._parse_references",
 		side_effect=sources,
 	)
 
@@ -174,6 +150,27 @@ def test_fetch_property_success(
 
 
 def test_fetch_property_returns_empty(mocker, client):
+	mocker.patch(
+		"canon_curator.enrich.clients.WikidataClient._fetch_entity",
+		return_value={"id": "Q17892"},
+	)
 	mocker.patch("canon_curator.enrich.clients.WikidataClient._fetch_claims", return_value=None)
 	result = client.fetch_property("Q17892", "P20")
 	assert result == EXPECTED_EMPTY_RESULT
+
+
+@pytest.mark.parametrize(
+	"entity_id, entity, wikipedia_only, expected_result",
+	[
+		("Q17892", ENTITY_Q17892, False, 147),
+		("Q17892", ENTITY_Q17892, True, 112),
+	],
+)
+def test_fetch_sitelinks_success(mocker, client, entity_id, entity, wikipedia_only, expected_result):
+	entity_data = entity.get("entities", {}).get(entity_id)
+	mocker.patch(
+		"canon_curator.enrich.clients.WikidataClient._fetch_entity",
+		return_value=entity_data,
+	)
+	result = client.fetch_sitelinks(entity_id, wikipedia_only)
+	assert result == expected_result

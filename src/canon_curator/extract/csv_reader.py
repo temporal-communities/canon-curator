@@ -1,46 +1,61 @@
 import csv
 import uuid
 from typing import TextIO
-from collections.abc import Iterable
+from pathlib import Path
+from functools import cached_property
+from io import StringIO
 
+from canon_curator.enrich.clients.http_client import HttpClient
 from canon_curator.extract import BaseReader
 from canon_curator.models import BaseWorkRecord
 
 
 class CSVReader(BaseReader):
-	def __init__(self, filename: str, delimiter: str) -> None:
-		super().__init__(filename)
-		self.filename = filename
+	def __init__(self, input_file: Path | str, delimiter: str) -> None:
+		super().__init__(input_file)
 		self.delimiter = delimiter
 		self.file: TextIO | None = None
 		self._reader: csv.DictReader | None = None
 
+	@cached_property
+	def _http_client(self) -> HttpClient:
+		return HttpClient(rate_limit="1/second", client_key="csv-reader")
+
 	def open(self) -> None:
-		self.file = open(self.filename, encoding="utf-8")
+		if isinstance(self.input_file, str) and self.input_file.startswith("http"):
+			response = self._http_client.fetch_page(self.input_file)
+			if not response:
+				raise RuntimeError(f"Failed to fetch {self.input_file}")
+			self.file = StringIO(response.text)
+		else:
+			self.file = open(self.input_file, encoding="utf-8")
 		self._reader = csv.DictReader(self.file, delimiter=self.delimiter)
 
 	def close(self) -> None:
 		if self.file and not self.file.closed:
 			self.file.close()
 
-	def read_file(self) -> Iterable[BaseWorkRecord]:
+		if "_http_client" in self.__dict__:
+			self._http_client.__exit__(None, None, None)
+
+	def read_file(self) -> list[BaseWorkRecord]:
 		records: list[BaseWorkRecord] = []
 		if self._reader is None:
 			raise RuntimeError("File is not opened.")
 		for row in self._reader:
 			records.append(
 				BaseWorkRecord(
-					uuid=uuid.uuid4(),  # convert to str here?
+					uuid=uuid.uuid4(),
 					list_num=row.get("List Number"),
 					series_num=row.get("Series Number"),
 					title=row.get("Title"),
 					author=row.get("Author"),
-					author_qid=row.get("Author_Wikidata_ID"),
-					work_qid=row.get("Work_Wikidata_ID"),
-					author_gnd_id=row.get("Author_GND_ID"),
-					work_gnd_id=row.get("Work_GND_ID"),
-					work_goodreads_id=row.get("Work_Goodreads_ID"),
-					publication_date=row.get("Publication_Date"),
+					author_qid=row.get("Author Wikidata ID"),
+					work_qid=row.get("Work Wikidata ID"),
+					author_gnd_id=row.get("Author GND ID"),
+					work_gnd_id=row.get("Work GND ID"),
+					work_goodreads_id=row.get("Work Goodreads ID"),
+					publication_date=row.get("Publication Date"),
 				)
 			)
 
