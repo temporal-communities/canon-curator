@@ -36,7 +36,7 @@ def _wikidata_author(
 		if not gender_qid and not gender_label:
 			continue
 
-		gender_uri = f"https://www.wikidata.org/entity/{gender_qid}" if gender_qid else None
+		gender_uri = f"http://www.wikidata.org/entity/{gender_qid}" if gender_qid else None
 		references = claim.get("sources", [])
 		has_references = len(references) > 0
 		is_inferred = has_references and all(
@@ -59,7 +59,7 @@ def _wikidata_author(
 				num_sources=len(references),
 				evidence_level=evidence_level,
 				source_db="https://www.wikidata.org/",
-				request_uri=f"https://www.wikidata.org/entity/{entity_id}",
+				request_uri=f"http://www.wikidata.org/entity/{entity_id}",
 				interpretation_context=f"https://www.wikidata.org/wiki/Property:{property_id}",
 				retrieved_at=retrieval_time,
 			)
