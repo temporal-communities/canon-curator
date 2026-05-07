@@ -58,7 +58,7 @@ def _wikidata_author(
 				sources=[ref["source"] for ref in references if ref["source"]],
 				num_sources=len(references),
 				evidence_level=evidence_level,
-				source_db="https://www.wikidata.org/",
+				source_db="http://www.wikidata.org/entity/Q2013",
 				request_uri=f"http://www.wikidata.org/entity/{entity_id}",
 				interpretation_context=f"https://www.wikidata.org/wiki/Property:{property_id}",
 				retrieved_at=retrieval_time,

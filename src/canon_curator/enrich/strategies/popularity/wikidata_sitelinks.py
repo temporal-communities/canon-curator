@@ -21,7 +21,7 @@ def wikidata_sitelinks(record: BaseWorkRecord, client: WikidataClient) -> list[P
 			work_uuid=record.uuid,
 			value=num_sitelinks,
 			metric=PopularityMetric.SITELINKS,
-			source_db="https://www.wikidata.org/",
+			source_db="http://www.wikidata.org/entity/Q2013",
 			request_uri=f"http://www.wikidata.org/entity/{record.work_qid}",
 			retrieved_at=retrieval_time,
 		)

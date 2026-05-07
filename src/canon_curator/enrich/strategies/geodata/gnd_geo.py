@@ -91,7 +91,7 @@ def gnd_geolabel(record: BaseWorkRecord, client: GNDClient) -> list[GeoRecord]:
 				lon=coords_rec[0].lon,
 				sources=geocode_rec.sources,
 				num_sources=geocode_rec.num_sources,
-				source_db="https://www.dnb.de/",
+				source_db="https://isil.staatsbibliothek-berlin.de/isil/DE-588",
 				request_uri=geocode_rec.request_uri,
 				interpretation_context=geocode_rec.interpretation_context,
 				evidence_level=geocode_rec.evidence_level,

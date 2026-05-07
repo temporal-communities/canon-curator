@@ -30,7 +30,7 @@ def _gnd_author(
 			sources=[],
 			num_sources=0,
 			evidence_level=None,
-			source_db="https://www.dnb.de/",
+			source_db="https://isil.staatsbibliothek-berlin.de/isil/DE-588",
 			request_uri=f"{client.lobid_base}{resource_id}",
 			interpretation_context=_GND_GENDER_GUIDE,
 			retrieved_at=retrieval_time,
