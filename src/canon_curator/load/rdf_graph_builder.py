@@ -192,7 +192,7 @@ class RDFGraphBuilder:
 	) -> ox.NamedNode:
 		base = rec.base_data
 		if base.author_qid:
-			iri = ox.NamedNode(f"https://www.wikidata.org/entity/{base.author_qid}")
+			iri = ox.NamedNode(f"http://www.wikidata.org/entity/{base.author_qid}")
 		elif base.author_gnd_id:
 			iri = ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}")
 		else:
@@ -210,7 +210,7 @@ class RDFGraphBuilder:
 				ox.Quad(
 					iri,
 					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"https://www.wikidata.org/entity/{base.author_qid}"),
+					ox.NamedNode(f"http://www.wikidata.org/entity/{base.author_qid}"),
 				)
 			)
 		if base.author_gnd_id:
@@ -231,7 +231,7 @@ class RDFGraphBuilder:
 	) -> ox.NamedNode:
 		base = rec.base_data
 		if base.work_qid:
-			iri = ox.NamedNode(f"https://www.wikidata.org/entity/{base.work_qid}")
+			iri = ox.NamedNode(f"http://www.wikidata.org/entity/{base.work_qid}")
 		elif base.work_gnd_id:
 			iri = ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}")
 		else:
@@ -252,7 +252,7 @@ class RDFGraphBuilder:
 				ox.Quad(
 					iri,
 					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"https://www.wikidata.org/entity/{base.work_qid}"),
+					ox.NamedNode(f"http://www.wikidata.org/entity/{base.work_qid}"),
 				)
 			)
 		if base.work_gnd_id:
@@ -285,7 +285,7 @@ class RDFGraphBuilder:
 				ox.Quad(
 					iri,
 					ox.NamedNode(GEO_WGS + "lat"),
-					ox.Literal(str(geo_rec.lat), datatype=ox.NamedNode(XSD + "decimal")),
+					ox.Literal(str(float(geo_rec.lat)), datatype=ox.NamedNode(XSD + "decimal")),
 				)
 			)
 		if geo_rec.lon is not None:
@@ -293,7 +293,7 @@ class RDFGraphBuilder:
 				ox.Quad(
 					iri,
 					ox.NamedNode(GEO_WGS + "long"),
-					ox.Literal(str(geo_rec.lon), datatype=ox.NamedNode(XSD + "decimal")),
+					ox.Literal(str(float(geo_rec.lon)), datatype=ox.NamedNode(XSD + "decimal")),
 				)
 			)
 		return iri
@@ -309,7 +309,6 @@ class RDFGraphBuilder:
 		store.add(
 			ox.Quad(enr_iri, ox.NamedNode(RDF + "type"), ox.NamedNode(CANON + "EnrichmentRecord"))
 		)
-		store.add(ox.Quad(enr_iri, ox.NamedNode(PROV + "wasDerivedFrom"), self.canon_list_iri))
 		store.add(ox.Quad(enr_iri, ox.NamedNode(PROV + "wasGeneratedBy"), activity_iri))
 
 		if enr_rec.retrieved_at is not None:
@@ -317,7 +316,7 @@ class RDFGraphBuilder:
 				ox.Quad(
 					enr_iri,
 					ox.NamedNode(PROV + "generatedAtTime"),
-					ox.Literal(str(enr_rec.retrieved_at), datatype=ox.NamedNode(XSD + "dateTime")),
+					ox.Literal(str(enr_rec.retrieved_at.isoformat()), datatype=ox.NamedNode(XSD + "dateTime")),
 				)
 			)
 		if enr_rec.source_db is not None:
@@ -361,7 +360,7 @@ class RDFGraphBuilder:
 				ox.Quad(
 					activity_iri,
 					ox.NamedNode(PROV + "startedAtTime"),
-					ox.Literal(str(enr_rec.retrieved_at), datatype=ox.NamedNode(XSD + "dateTime")),
+					ox.Literal(str(enr_rec.retrieved_at.isoformat()), datatype=ox.NamedNode(XSD + "dateTime")),
 				)
 			)
 		if enr_rec.request_uri is not None:
