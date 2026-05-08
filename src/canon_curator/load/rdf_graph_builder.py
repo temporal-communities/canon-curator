@@ -72,8 +72,8 @@ class RDFGraphBuilder:
 	Propositions such as "author Y has birth place Z" are linked with their provenance (=enrichment record)
 	using the RDF 1.2 triple annotation / triple term pattern:
 
-	    _:b rdf:reifies <<( subj pred obj )>> ;
-	        canon:hasEnrichment <enr_iri> .
+		_:b rdf:reifies <<( subj pred obj )>> ;
+			canon:hasEnrichment <enr_iri> .
 
 	Propositions denoted by the triple term (subj pred obj) are always asserted in the graph, but the source
 	(or lack of sources) is used to decide which subproperty of canon:geoloccation and canon:gender is used
@@ -124,6 +124,7 @@ class RDFGraphBuilder:
 				)
 			)
 
+		seen_source_dbs: set[str] = set()
 		seen_authors: dict[str, ox.NamedNode] = {}
 		activity_iris: list[ox.NamedNode] = []
 
@@ -135,21 +136,38 @@ class RDFGraphBuilder:
 				if geo_rec.geo_uri:
 					_, act = self._add_geo_enrichment(store, work_iri, author_iri, geo_rec)
 					activity_iris.append(act)
+				if geo_rec.source_db:
+					seen_source_dbs.add(geo_rec.source_db)
 
 			for author_rec in rec.authordata or []:
 				if author_rec.gender_uri:
 					_, act = self._add_author_enrichment(store, author_iri, author_rec)
 					activity_iris.append(act)
+				if author_rec.source_db:
+					seen_source_dbs.add(author_rec.source_db)
 
 			for pop_rec in rec.wd_metrics:
 				if not pop_rec.is_empty():
 					_, act = self._add_popularity_enrichment(store, work_iri, pop_rec)
 					activity_iris.append(act)
+				if pop_rec.source_db:
+					seen_source_dbs.add(pop_rec.source_db)
 
 			for rs_rec in rec.readerstats:
 				if not rs_rec.is_empty():
 					_, act = self._add_readerstats_enrichment(store, work_iri, rs_rec)
 					activity_iris.append(act)
+				if rs_rec.source_db:
+					seen_source_dbs.add(rs_rec.source_db)
+
+		for source_db_uri in seen_source_dbs:
+			store.add(
+				ox.Quad(
+					ox.NamedNode(source_db_uri),
+					ox.NamedNode(RDF + "type"),
+					ox.NamedNode(PROV + "Entity"),
+				)
+			)
 
 		run_iri = ox.NamedNode("urn:uuid:enrichment-run")
 		store.add(
@@ -161,6 +179,15 @@ class RDFGraphBuilder:
 		)
 		for act in activity_iris:
 			store.add(ox.Quad(run_iri, ox.NamedNode(DCTERMS + "hasPart"), act))
+
+		if self.software_agent_iri:
+			store.add(
+				ox.Quad(
+					self.software_agent_iri,
+					ox.NamedNode(RDF + "type"),
+					ox.NamedNode(PROV + "SoftwareAgent"),
+				)
+			)
 
 		return store
 
@@ -175,7 +202,7 @@ class RDFGraphBuilder:
 		"""Assert a triple in the RDF graph and annotate it using the RDF 1.2 pattern:
 
 		_:b rdf:reifies <<( subj pred obj )>> ;
-		    canon:hasEnrichment enr_iri .
+			canon:hasEnrichment enr_iri .
 
 		See: https://www.w3.org/TR/rdf12-concepts/#section-triple-terms-reification
 		"""
@@ -316,7 +343,10 @@ class RDFGraphBuilder:
 				ox.Quad(
 					enr_iri,
 					ox.NamedNode(PROV + "generatedAtTime"),
-					ox.Literal(str(enr_rec.retrieved_at.isoformat()), datatype=ox.NamedNode(XSD + "dateTime")),
+					ox.Literal(
+						str(enr_rec.retrieved_at.isoformat()),
+						datatype=ox.NamedNode(XSD + "dateTime"),
+					),
 				)
 			)
 		if enr_rec.source_db is not None:
@@ -325,6 +355,14 @@ class RDFGraphBuilder:
 					enr_iri,
 					ox.NamedNode(PROV + "wasDerivedFrom"),
 					ox.NamedNode(enr_rec.source_db),
+				)
+			)
+		if enr_rec.request_uri is not None:
+			store.add(
+				ox.Quad(
+					enr_iri,
+					ox.NamedNode(PAV + "importedFrom"),
+					ox.NamedNode(enr_rec.request_uri),
 				)
 			)
 
@@ -360,15 +398,10 @@ class RDFGraphBuilder:
 				ox.Quad(
 					activity_iri,
 					ox.NamedNode(PROV + "startedAtTime"),
-					ox.Literal(str(enr_rec.retrieved_at.isoformat()), datatype=ox.NamedNode(XSD + "dateTime")),
-				)
-			)
-		if enr_rec.request_uri is not None:
-			store.add(
-				ox.Quad(
-					activity_iri,
-					ox.NamedNode(PROV + "used"),
-					ox.NamedNode(enr_rec.request_uri),
+					ox.Literal(
+						str(enr_rec.retrieved_at.isoformat()),
+						datatype=ox.NamedNode(XSD + "dateTime"),
+					),
 				)
 			)
 		if self.software_agent_iri:
