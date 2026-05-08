@@ -1,2 +1,106 @@
 # SHACL SHAPES
 # 06.11.2025
+
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix canon: <https://github.com/temporal-communities/canon-curator/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+canon:WorkShape 
+    a sh:NodeShape ;
+    sh:targetClass canon:Work ;
+    sh:property [
+        sh:path dct:creator ;
+        sh:class canon:Author ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Every canon:Work must have exactly one dct:creator of type canon:Author." ;
+    ] ;
+    sh:property [
+        sh:path dct:title ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Every canon:Work must have exactly one dct:title." ;
+    ] ;
+    sh:property [
+        sh:path dct:isPartOf ;
+        sh:class canon:CanonList ;
+        sh:minCount 1 ;
+        sh:message "Every canon:Work must have at least one dct:isPartOf of type canon:CanonList." ;
+    ] .
+
+canon:EnrichmentRecordShape
+    a sh:NodeShape ;
+    sh:targetClass canon:EnrichmentRecord ;
+    sh:property [
+        sh:path [ sh:inversePath prov:generated ] ;
+        sh:class canon:MetadataEnrichment ;
+        sh:minCount 1 ;
+        sh:message "Every canon:EnrichmentRecord must be the object of prov:generated from at least one canon:MetadataEnrichment activity." ;
+    ] ;
+    sh:property [
+        sh:path prov:wasDerivedFrom ;
+        sh:minCount 1 ;
+        sh:message "Every canon:EnrichmentRecord must have at least one prov:wasDerivedFrom."
+    ] ;
+    sh:property [
+        sh:path prov:generatedAtTime ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:message "Every canon:EnrichmentRecord must have exactly one prov:generatedAtTime typed as xsd:dateTime." ;
+    ] ;
+    sh:property [
+        sh:path prov:wasGeneratedBy ;
+        sh:class canon:MetadataEnrichment ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:message "Every canon:EnrichmentRecord must have exactly one prov:wasGeneratedBy of type canon:MetadataEnrichment." ;
+    ] .
+
+canon:EnrichmentRecordReifierShape
+    a sh:NodeShape ;
+    sh:targetClass canon:EnrichmentRecord ;
+    sh:property [
+        sh:path [ sh:inversePath canon:hasEnrichment ] ;
+        sh:minCount 1 ;
+        sh:message "Every canon:EnrichmentRecord must be referenced by at least one blank node via canon:hasEnrichment." ;
+    ] .
+
+canon:MetadataEnrichmentShape 
+    a sh:NodeShape ;
+    sh:targetClass canon:MetadataEnrichment ;
+    sh:property [
+        sh:path prov:generated ;
+        sh:class canon:EnrichmentRecord ;
+        sh:minCount 1 ; 
+        sh:message "Every canon:MetadataEnrichment activity must have at least one prov:generated of type canon:EnrichmentRecord." ;
+    ] ;
+    sh:property [
+        sh:path prov:startedAtTime ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:message "Every canon:MetadataEnrichment activity must have exactly one prov:startedAtTime typed as xsd:dateTime." ;
+    ] ;
+    sh:property [
+        sh:path prov:wasAssociatedWith ;
+        sh:minCount 1 ; 
+        sh:message "Every canon:MetadataEnrichment activity must have at least one prov:wasAssociatedWith." ;
+    ] .
+
+canon:LocationShape
+    a sh:NodeShape ;
+    sh:targetClass canon:Location ;
+    sh:property [
+        sh:path geo:lat ;
+        sh:datatype xsd:decimal ;
+        sh:message "If present, geo:lat must be typed as xsd:decimal." ;
+    ] ;
+    sh:property [
+        sh:path geo:long ;
+        sh:datatype xsd:decimal ;
+        sh:message "If present, geo:long must be typed as xsd:decimal." ;
+    ] .
