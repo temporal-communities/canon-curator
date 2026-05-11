@@ -6,15 +6,15 @@
       "@type": ["http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement"],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#object": [{"@id": "https://d-nb.info/standards/vocab/gnd/geographic-area-code#XA-GB"}],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate": [{"@id": "https://github.com/temporal-communities/canon-curator/ontology/assumedGeolocation"}],
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "https://www.wikidata.org/entity/Q752584"}],
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "http://www.wikidata.org/entity/Q752584"}],
       "https://github.com/temporal-communities/canon-curator/ontology/hasEnrichment": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000003"}]
     },
     {
       "@id": "_:N1",
       "@type": ["http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement"],
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#object": [{"@id": "https://www.wikidata.org/entity/Q6581072"}],
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#object": [{"@id": "http://www.wikidata.org/entity/Q6581072"}],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate": [{"@id": "https://github.com/temporal-communities/canon-curator/ontology/recordedGender"}],
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "https://www.wikidata.org/entity/Q40909"}],
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "http://www.wikidata.org/entity/Q40909"}],
       "https://github.com/temporal-communities/canon-curator/ontology/hasEnrichment": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000004"}]
     },
     {
@@ -22,7 +22,7 @@
       "@type": ["http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement"],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#object": [{"@type": "http://www.w3.org/2001/XMLSchema#integer", "@value": 20}],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate": [{"@id": "https://github.com/temporal-communities/canon-curator/ontology/sitelinkCount"}],
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "https://www.wikidata.org/entity/Q752584"}],
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "http://www.wikidata.org/entity/Q752584"}],
       "https://github.com/temporal-communities/canon-curator/ontology/hasEnrichment": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000005"}]
     },
     {
@@ -30,7 +30,7 @@
       "@type": ["http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement"],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#object": [{"@type": "http://www.w3.org/2001/XMLSchema#decimal", "@value": "3.77"}],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate": [{"@id": "https://github.com/temporal-communities/canon-curator/ontology/ratingValue"}],
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "https://www.wikidata.org/entity/Q752584"}],
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "http://www.wikidata.org/entity/Q752584"}],
       "https://github.com/temporal-communities/canon-curator/ontology/hasEnrichment": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000006"}]
     },
     {
@@ -38,7 +38,7 @@
       "@type": ["http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement"],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#object": [{"@type": "http://www.w3.org/2001/XMLSchema#integer", "@value": 362177}],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate": [{"@id": "https://github.com/temporal-communities/canon-curator/ontology/ratingCount"}],
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "https://www.wikidata.org/entity/Q752584"}],
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "http://www.wikidata.org/entity/Q752584"}],
       "https://github.com/temporal-communities/canon-curator/ontology/hasEnrichment": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000006"}]
     },
     {
@@ -46,7 +46,7 @@
       "@type": ["http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement"],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#object": [{"@type": "http://www.w3.org/2001/XMLSchema#integer", "@value": 100}],
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate": [{"@id": "https://github.com/temporal-communities/canon-curator/ontology/qRank"}],
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "https://www.wikidata.org/entity/Q752584"}],
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject": [{"@id": "http://www.wikidata.org/entity/Q752584"}],
       "https://github.com/temporal-communities/canon-curator/ontology/hasEnrichment": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000007"}]
     },
     {
@@ -63,27 +63,25 @@
       "https://github.com/temporal-communities/canon-curator/ontology/hasMetadata": [{"@id": "https://example.org/test-list-metadata"}]
     },
     {
-      "@id": "https://www.wikidata.org/entity/Q40909",
+      "@id": "http://www.wikidata.org/entity/Q40909",
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/Author"],
       "http://www.w3.org/2000/01/rdf-schema#label": [{"@value": "Virginia Woolf"}],
       "http://www.w3.org/2002/07/owl#sameAs": [
-        {"@id": "https://d-nb.info/gnd/118635174"},
-        {"@id": "https://www.wikidata.org/entity/Q40909"}
+        {"@id": "https://d-nb.info/gnd/118635174"}
       ],
-      "https://github.com/temporal-communities/canon-curator/ontology/recordedGender": [{"@id": "https://www.wikidata.org/entity/Q6581072"}]
+      "https://github.com/temporal-communities/canon-curator/ontology/recordedGender": [{"@id": "http://www.wikidata.org/entity/Q6581072"}]
     },
     {
-      "@id": "https://www.wikidata.org/entity/Q752584",
+      "@id": "http://www.wikidata.org/entity/Q752584",
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/Work"],
-      "http://purl.org/dc/terms/creator": [{"@id": "https://www.wikidata.org/entity/Q40909"}],
+      "http://purl.org/dc/terms/creator": [{"@id": "http://www.wikidata.org/entity/Q40909"}],
       "http://purl.org/dc/terms/isPartOf": [{"@id": "https://example.org/test-list"}],
       "http://purl.org/dc/terms/issued": [{"@value": "1925"}],
       "http://purl.org/dc/terms/title": [{"@value": "Mrs. Dalloway"}],
       "http://www.w3.org/2000/01/rdf-schema#label": [{"@value": "Mrs. Dalloway"}],
       "http://www.w3.org/2002/07/owl#sameAs": [
         {"@id": "https://d-nb.info/gnd/4316776-7"},
-        {"@id": "https://www.goodreads.com/book/show/841320"},
-        {"@id": "https://www.wikidata.org/entity/Q752584"}
+        {"@id": "https://www.goodreads.com/book/show/841320"}
       ],
       "https://github.com/temporal-communities/canon-curator/ontology/assumedGeolocation": [{"@id": "https://d-nb.info/standards/vocab/gnd/geographic-area-code#XA-GB"}],
       "https://github.com/temporal-communities/canon-curator/ontology/qRank": [{"@type": "http://www.w3.org/2001/XMLSchema#integer", "@value": 100}],
@@ -97,9 +95,9 @@
       "http://purl.org/pav/sourceAccessedAt": [{"@id": "https://wiki.dnb.de/download/attachments/90411323/laendercodeleitfaden.pdf"}],
       "http://www.w3.org/ns/prov#generatedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
       "http://www.w3.org/ns/prov#wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
-        {"@id": "https://www.dnb.de/"}
+        {"@id": "https://isil.staatsbibliothek-berlin.de/isil/DE-588"}
       ],
+      "http://purl.org/pav/importedFrom": [{"@id": "https://lobid.org/gnd/4316776-7"}],
       "http://www.w3.org/ns/prov#wasGeneratedBy": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000003#activity"}]
     },
     {
@@ -107,7 +105,6 @@
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/MetadataEnrichment"],
       "http://www.w3.org/ns/prov#generated": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000003"}],
       "http://www.w3.org/ns/prov#startedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
-      "http://www.w3.org/ns/prov#used": [{"@id": "https://lobid.org/gnd/4316776-7"}],
       "http://www.w3.org/ns/prov#wasAssociatedWith": [{"@id": "https://github.com/temporal-communities/canon-curator/"}]
     },
     {
@@ -117,9 +114,9 @@
       "http://www.w3.org/ns/prov#generatedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
       "http://www.w3.org/ns/prov#hadPrimarySource": [{"@id": "https://www.wikidata.org/entity/Q2494649"}],
       "http://www.w3.org/ns/prov#wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
-        {"@id": "https://www.wikidata.org/"}
+        {"@id": "http://www.wikidata.org/entity/Q2013"}
       ],
+      "http://purl.org/pav/importedFrom": [{"@id": "https://www.wikidata.org/wiki/Special:EntityData/Q40909"}],
       "http://www.w3.org/ns/prov#wasGeneratedBy": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000004#activity"}]
     },
     {
@@ -127,7 +124,6 @@
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/MetadataEnrichment"],
       "http://www.w3.org/ns/prov#generated": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000004"}],
       "http://www.w3.org/ns/prov#startedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
-      "http://www.w3.org/ns/prov#used": [{"@id": "https://www.wikidata.org/entity/Q40909"}],
       "http://www.w3.org/ns/prov#wasAssociatedWith": [{"@id": "https://github.com/temporal-communities/canon-curator/"}]
     },
     {
@@ -135,9 +131,9 @@
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/EnrichmentRecord"],
       "http://www.w3.org/ns/prov#generatedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
       "http://www.w3.org/ns/prov#wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
-        {"@id": "https://www.wikidata.org/"}
+        {"@id": "http://www.wikidata.org/entity/Q2013"}
       ],
+      "http://purl.org/pav/importedFrom": [{"@id": "https://www.wikidata.org/wiki/Special:EntityData/Q752584"}],
       "http://www.w3.org/ns/prov#wasGeneratedBy": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000005#activity"}]
     },
     {
@@ -145,7 +141,6 @@
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/MetadataEnrichment"],
       "http://www.w3.org/ns/prov#generated": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000005"}],
       "http://www.w3.org/ns/prov#startedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
-      "http://www.w3.org/ns/prov#used": [{"@id": "https://www.wikidata.org/entity/Q752584"}],
       "http://www.w3.org/ns/prov#wasAssociatedWith": [{"@id": "https://github.com/temporal-communities/canon-curator/"}]
     },
     {
@@ -153,9 +148,9 @@
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/EnrichmentRecord"],
       "http://www.w3.org/ns/prov#generatedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
       "http://www.w3.org/ns/prov#wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
         {"@id": "https://www.goodreads.com/"}
       ],
+      "http://purl.org/pav/importedFrom": [{"@id": "https://www.goodreads.com/book/show/14942.Mrs_Dalloway"}],
       "http://www.w3.org/ns/prov#wasGeneratedBy": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000006#activity"}]
     },
     {
@@ -163,7 +158,6 @@
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/MetadataEnrichment"],
       "http://www.w3.org/ns/prov#generated": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000006"}],
       "http://www.w3.org/ns/prov#startedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
-      "http://www.w3.org/ns/prov#used": [{"@id": "https://www.goodreads.com/book/show/14942.Mrs_Dalloway"}],
       "http://www.w3.org/ns/prov#wasAssociatedWith": [{"@id": "https://github.com/temporal-communities/canon-curator/"}]
     },
     {
@@ -171,9 +165,9 @@
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/EnrichmentRecord"],
       "http://www.w3.org/ns/prov#generatedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
       "http://www.w3.org/ns/prov#wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
         {"@id": "https://qrank.toolforge.org/"}
       ],
+      "http://purl.org/pav/importedFrom": [{"@id": "https://qrank.toolforge.org/download/qrank.csv.gz"}],
       "http://www.w3.org/ns/prov#wasGeneratedBy": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000007#activity"}]
     },
     {
@@ -181,9 +175,16 @@
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/MetadataEnrichment"],
       "http://www.w3.org/ns/prov#generated": [{"@id": "urn:uuid:00000000-0000-0000-0000-000000000007"}],
       "http://www.w3.org/ns/prov#startedAtTime": [{"@type": "http://www.w3.org/2001/XMLSchema#dateTime", "@value": "2025-01-01T00:00:00+00:00"}],
-      "http://www.w3.org/ns/prov#used": [{"@id": "https://qrank.toolforge.org/download/qrank.csv.gz"}],
       "http://www.w3.org/ns/prov#wasAssociatedWith": [{"@id": "https://github.com/temporal-communities/canon-curator/"}]
     },
+    {
+      "@id": "https://github.com/temporal-communities/canon-curator/",
+      "@type": ["http://www.w3.org/ns/prov#SoftwareAgent"]
+    },
+    {"@id": "http://www.wikidata.org/entity/Q2013", "@type": ["http://www.w3.org/ns/prov#Entity"]},
+    {"@id": "https://isil.staatsbibliothek-berlin.de/isil/DE-588", "@type": ["http://www.w3.org/ns/prov#Entity"]},
+    {"@id": "https://qrank.toolforge.org/", "@type": ["http://www.w3.org/ns/prov#Entity"]},
+    {"@id": "https://www.goodreads.com/", "@type": ["http://www.w3.org/ns/prov#Entity"]},
     {
       "@id": "urn:uuid:enrichment-run",
       "@type": ["https://github.com/temporal-communities/canon-curator/ontology/EnrichmentActivity"],

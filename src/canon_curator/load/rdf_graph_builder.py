@@ -72,8 +72,8 @@ class RDFGraphBuilder:
 	Propositions such as "author Y has birth place Z" are linked with their provenance (=enrichment record)
 	using the RDF 1.2 triple annotation / triple term pattern:
 
-	    _:b rdf:reifies <<( subj pred obj )>> ;
-	        canon:hasEnrichment <enr_iri> .
+		_:b rdf:reifies <<( subj pred obj )>> ;
+			canon:hasEnrichment <enr_iri> .
 
 	Propositions denoted by the triple term (subj pred obj) are always asserted in the graph, but the source
 	(or lack of sources) is used to decide which subproperty of canon:geoloccation and canon:gender is used
@@ -124,32 +124,49 @@ class RDFGraphBuilder:
 				)
 			)
 
-		seen_authors: dict[str, ox.NamedNode] = {}
+		seen_source_dbs: set[str] = set()
 		activity_iris: list[ox.NamedNode] = []
 
 		for rec in records:
-			author_iri = self._add_author(store, rec, seen_authors)
+			author_iri = self._add_author(store, rec)
 			work_iri = self._add_work(store, rec, author_iri)
 
 			for geo_rec in rec.geodata or []:
 				if geo_rec.geo_uri:
 					_, act = self._add_geo_enrichment(store, work_iri, author_iri, geo_rec)
 					activity_iris.append(act)
+				if geo_rec.source_db:
+					seen_source_dbs.add(geo_rec.source_db)
 
 			for author_rec in rec.authordata or []:
 				if author_rec.gender_uri:
 					_, act = self._add_author_enrichment(store, author_iri, author_rec)
 					activity_iris.append(act)
+				if author_rec.source_db:
+					seen_source_dbs.add(author_rec.source_db)
 
 			for pop_rec in rec.wd_metrics:
 				if not pop_rec.is_empty():
 					_, act = self._add_popularity_enrichment(store, work_iri, pop_rec)
 					activity_iris.append(act)
+				if pop_rec.source_db:
+					seen_source_dbs.add(pop_rec.source_db)
 
 			for rs_rec in rec.readerstats:
 				if not rs_rec.is_empty():
 					_, act = self._add_readerstats_enrichment(store, work_iri, rs_rec)
 					activity_iris.append(act)
+				if rs_rec.source_db:
+					seen_source_dbs.add(rs_rec.source_db)
+
+		for source_db_uri in seen_source_dbs:
+			store.add(
+				ox.Quad(
+					ox.NamedNode(source_db_uri),
+					ox.NamedNode(RDF + "type"),
+					ox.NamedNode(PROV + "Entity"),
+				)
+			)
 
 		run_iri = ox.NamedNode("urn:uuid:enrichment-run")
 		store.add(
@@ -161,6 +178,15 @@ class RDFGraphBuilder:
 		)
 		for act in activity_iris:
 			store.add(ox.Quad(run_iri, ox.NamedNode(DCTERMS + "hasPart"), act))
+
+		if self.software_agent_iri:
+			store.add(
+				ox.Quad(
+					self.software_agent_iri,
+					ox.NamedNode(RDF + "type"),
+					ox.NamedNode(PROV + "SoftwareAgent"),
+				)
+			)
 
 		return store
 
@@ -175,7 +201,7 @@ class RDFGraphBuilder:
 		"""Assert a triple in the RDF graph and annotate it using the RDF 1.2 pattern:
 
 		_:b rdf:reifies <<( subj pred obj )>> ;
-		    canon:hasEnrichment enr_iri .
+			canon:hasEnrichment enr_iri .
 
 		See: https://www.w3.org/TR/rdf12-concepts/#section-triple-terms-reification
 		"""
@@ -188,39 +214,27 @@ class RDFGraphBuilder:
 		self,
 		store: ox.Store,
 		rec: EnrichedWorkRecord,
-		seen: dict[str, ox.NamedNode],
 	) -> ox.NamedNode:
 		base = rec.base_data
 		if base.author_qid:
-			iri = ox.NamedNode(f"https://www.wikidata.org/entity/{base.author_qid}")
+			iri = ox.NamedNode(f"http://www.wikidata.org/entity/{base.author_qid}")
+			if base.author_gnd_id:
+				store.add(
+					ox.Quad(
+						iri,
+						ox.NamedNode(OWL + "sameAs"),
+						ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}"),
+					)
+				)
 		elif base.author_gnd_id:
 			iri = ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}")
 		else:
 			iri = ox.NamedNode(f"urn:uuid:{base.uuid}#author")
 
-		if iri.value in seen:
-			return seen[iri.value]
-		seen[iri.value] = iri
-
 		store.add(ox.Quad(iri, ox.NamedNode(RDF + "type"), ox.NamedNode(CANON + "Author")))
 		if base.author:
 			store.add(ox.Quad(iri, ox.NamedNode(RDFS + "label"), ox.Literal(base.author)))
-		if base.author_qid:
-			store.add(
-				ox.Quad(
-					iri,
-					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"https://www.wikidata.org/entity/{base.author_qid}"),
-				)
-			)
-		if base.author_gnd_id:
-			store.add(
-				ox.Quad(
-					iri,
-					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}"),
-				)
-			)
+
 		return iri
 
 	def _add_work(
@@ -231,7 +245,15 @@ class RDFGraphBuilder:
 	) -> ox.NamedNode:
 		base = rec.base_data
 		if base.work_qid:
-			iri = ox.NamedNode(f"https://www.wikidata.org/entity/{base.work_qid}")
+			iri = ox.NamedNode(f"http://www.wikidata.org/entity/{base.work_qid}")
+			if base.work_gnd_id:
+				store.add(
+					ox.Quad(
+						iri,
+						ox.NamedNode(OWL + "sameAs"),
+						ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}"),
+					)
+				)
 		elif base.work_gnd_id:
 			iri = ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}")
 		else:
@@ -246,22 +268,6 @@ class RDFGraphBuilder:
 		if base.publication_date:
 			store.add(
 				ox.Quad(iri, ox.NamedNode(DCTERMS + "issued"), ox.Literal(base.publication_date))
-			)
-		if base.work_qid:
-			store.add(
-				ox.Quad(
-					iri,
-					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"https://www.wikidata.org/entity/{base.work_qid}"),
-				)
-			)
-		if base.work_gnd_id:
-			store.add(
-				ox.Quad(
-					iri,
-					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}"),
-				)
 			)
 		if base.work_goodreads_id:
 			store.add(
@@ -285,7 +291,7 @@ class RDFGraphBuilder:
 				ox.Quad(
 					iri,
 					ox.NamedNode(GEO_WGS + "lat"),
-					ox.Literal(str(geo_rec.lat), datatype=ox.NamedNode(XSD + "decimal")),
+					ox.Literal(str(float(geo_rec.lat)), datatype=ox.NamedNode(XSD + "decimal")),
 				)
 			)
 		if geo_rec.lon is not None:
@@ -293,7 +299,7 @@ class RDFGraphBuilder:
 				ox.Quad(
 					iri,
 					ox.NamedNode(GEO_WGS + "long"),
-					ox.Literal(str(geo_rec.lon), datatype=ox.NamedNode(XSD + "decimal")),
+					ox.Literal(str(float(geo_rec.lon)), datatype=ox.NamedNode(XSD + "decimal")),
 				)
 			)
 		return iri
@@ -309,7 +315,6 @@ class RDFGraphBuilder:
 		store.add(
 			ox.Quad(enr_iri, ox.NamedNode(RDF + "type"), ox.NamedNode(CANON + "EnrichmentRecord"))
 		)
-		store.add(ox.Quad(enr_iri, ox.NamedNode(PROV + "wasDerivedFrom"), self.canon_list_iri))
 		store.add(ox.Quad(enr_iri, ox.NamedNode(PROV + "wasGeneratedBy"), activity_iri))
 
 		if enr_rec.retrieved_at is not None:
@@ -317,7 +322,10 @@ class RDFGraphBuilder:
 				ox.Quad(
 					enr_iri,
 					ox.NamedNode(PROV + "generatedAtTime"),
-					ox.Literal(str(enr_rec.retrieved_at), datatype=ox.NamedNode(XSD + "dateTime")),
+					ox.Literal(
+						str(enr_rec.retrieved_at.isoformat()),
+						datatype=ox.NamedNode(XSD + "dateTime"),
+					),
 				)
 			)
 		if enr_rec.source_db is not None:
@@ -326,6 +334,14 @@ class RDFGraphBuilder:
 					enr_iri,
 					ox.NamedNode(PROV + "wasDerivedFrom"),
 					ox.NamedNode(enr_rec.source_db),
+				)
+			)
+		if enr_rec.request_url is not None:
+			store.add(
+				ox.Quad(
+					enr_iri,
+					ox.NamedNode(PAV + "importedFrom"),
+					ox.NamedNode(enr_rec.request_url),
 				)
 			)
 
@@ -361,15 +377,10 @@ class RDFGraphBuilder:
 				ox.Quad(
 					activity_iri,
 					ox.NamedNode(PROV + "startedAtTime"),
-					ox.Literal(str(enr_rec.retrieved_at), datatype=ox.NamedNode(XSD + "dateTime")),
-				)
-			)
-		if enr_rec.request_uri is not None:
-			store.add(
-				ox.Quad(
-					activity_iri,
-					ox.NamedNode(PROV + "used"),
-					ox.NamedNode(enr_rec.request_uri),
+					ox.Literal(
+						str(enr_rec.retrieved_at.isoformat()),
+						datatype=ox.NamedNode(XSD + "dateTime"),
+					),
 				)
 			)
 		if self.software_agent_iri:

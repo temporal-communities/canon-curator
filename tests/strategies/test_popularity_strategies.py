@@ -15,6 +15,7 @@ def test_wikidata_qrank_success(mocker, base_record, expected_qrank_record):
 @freeze_time("2025-01-01 00:00:00")
 def test_wikidata_sitelinks_success(mocker, base_record, expected_sitelinks_record):
 	mock_client = mocker.Mock()
+	mock_client.wikidata_base = "https://www.wikidata.org/wiki/Special:EntityData/"
 	mock_client.fetch_sitelinks.return_value = 20
 	result = wikidata_sitelinks(base_record, client=mock_client)
 	assert result == [expected_sitelinks_record]

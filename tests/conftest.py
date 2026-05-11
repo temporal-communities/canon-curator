@@ -36,8 +36,8 @@ def _make_geo_record_gnd(rec_uuid=_REC_UUID):
 		sources=[],
 		num_sources=0,
 		evidence_level=None,
-		source_db="https://www.dnb.de/",
-		request_uri="https://lobid.org/gnd/4316776-7",
+		source_db="https://isil.staatsbibliothek-berlin.de/isil/DE-588",
+		request_url="https://lobid.org/gnd/4316776-7",
 		interpretation_context="https://wiki.dnb.de/download/attachments/90411323/laendercodeleitfaden.pdf",
 		retrieved_at=_RETRIEVED_AT,
 	)
@@ -48,15 +48,15 @@ def _make_geo_record_wikidata(rec_uuid=_REC_UUID):
 		uuid=_REC_UUID,
 		work_uuid=_WORK_UUID,
 		geo_id="Q1018197",
-		geo_uri="https://www.wikidata.org/entity/Q1018197",
+		geo_uri="http://www.wikidata.org/entity/Q1018197",
 		geo_label="Eresos",
 		lat=39.169897,
 		lon=25.933797,
 		sources=["https://www.wikidata.org/entity/Q65921422"],
 		num_sources=1,
 		evidence_level=EvidenceLevel.REFERENCED,
-		source_db="https://www.wikidata.org/",
-		request_uri="https://www.wikidata.org/entity/Q17892",
+		source_db="http://www.wikidata.org/entity/Q2013",
+		request_url="https://www.wikidata.org/wiki/Special:EntityData/Q17892",
 		interpretation_context="https://www.wikidata.org/wiki/Property:P19",
 		retrieved_at=_RETRIEVED_AT,
 	)
@@ -67,15 +67,15 @@ def _make_geo_record_wikidata_no_evidence(rec_uuid=_REC_UUID):
 		uuid=_REC_UUID,
 		work_uuid=_WORK_UUID,
 		geo_id="Q42295059",
-		geo_uri="https://www.wikidata.org/entity/Q42295059",
+		geo_uri="http://www.wikidata.org/entity/Q42295059",
 		geo_label="Mytilene",
 		lat=39.1114,
 		lon=26.5621,
 		sources=[],
 		num_sources=0,
 		evidence_level=None,
-		source_db="https://www.wikidata.org/",
-		request_uri="https://www.wikidata.org/entity/Q17892",
+		source_db="http://www.wikidata.org/entity/Q2013",
+		request_url="https://www.wikidata.org/wiki/Special:EntityData/Q17892",
 		interpretation_context="https://www.wikidata.org/wiki/Property:P19",
 		retrieved_at=_RETRIEVED_AT,
 	)
@@ -94,7 +94,7 @@ def _make_empty_geo_record(rec_uuid=_REC_UUID):
 		num_sources=None,
 		evidence_level=None,
 		source_db=None,
-		request_uri=None,
+		request_url=None,
 		interpretation_context=None,
 		retrieved_at=None,
 	)
@@ -104,13 +104,13 @@ def _make_author_record_wikidata(rec_uuid=_REC_UUID):
 	return AuthorRecord(
 		uuid=rec_uuid,
 		work_uuid=_WORK_UUID,
-		gender_uri="https://www.wikidata.org/entity/Q6581072",
+		gender_uri="http://www.wikidata.org/entity/Q6581072",
 		gender_marker="female",
 		sources=["https://www.wikidata.org/entity/Q2494649"],
 		num_sources=1,
 		evidence_level=EvidenceLevel.REFERENCED,
-		source_db="https://www.wikidata.org/",
-		request_uri="https://www.wikidata.org/entity/Q40909",
+		source_db="http://www.wikidata.org/entity/Q2013",
+		request_url="https://www.wikidata.org/wiki/Special:EntityData/Q40909",
 		interpretation_context="https://www.wikidata.org/wiki/Property:P21",
 		retrieved_at=_RETRIEVED_AT,
 	)
@@ -125,8 +125,8 @@ def _make_author_record_gnd(rec_uuid=_REC_UUID):
 		sources=[],
 		num_sources=0,
 		evidence_level=None,
-		source_db="https://www.dnb.de/",
-		request_uri="https://lobid.org/gnd/118635174",
+		source_db="https://isil.staatsbibliothek-berlin.de/isil/DE-588",
+		request_url="https://lobid.org/gnd/118635174",
 		interpretation_context="https://wiki.dnb.de/download/attachments/50759357/375.pdf",
 		retrieved_at=_RETRIEVED_AT,
 	)
@@ -142,7 +142,7 @@ def _make_empty_author_record(rec_uuid=_REC_UUID):
 		num_sources=None,
 		evidence_level=None,
 		source_db=None,
-		request_uri=None,
+		request_url=None,
 		interpretation_context=None,
 		retrieved_at=None,
 	)
@@ -154,8 +154,8 @@ def _make_sitelinks_record(rec_uuid=_REC_UUID):
 		work_uuid=_WORK_UUID,
 		value=20,
 		metric=PopularityMetric.SITELINKS,
-		source_db="https://www.wikidata.org/",
-		request_uri="https://www.wikidata.org/entity/Q752584",
+		source_db="http://www.wikidata.org/entity/Q2013",
+		request_url="https://www.wikidata.org/wiki/Special:EntityData/Q752584",
 		retrieved_at=_RETRIEVED_AT,
 	)
 
@@ -167,7 +167,7 @@ def _make_qrank_record(rec_uuid=_REC_UUID):
 		value=100,
 		metric=PopularityMetric.QRANK,
 		source_db="https://qrank.toolforge.org/",
-		request_uri="https://qrank.toolforge.org/download/qrank.csv.gz",
+		request_url="https://qrank.toolforge.org/download/qrank.csv.gz",
 		retrieved_at=_RETRIEVED_AT,
 	)
 
@@ -179,7 +179,7 @@ def _make_empty_popularity_record(rec_uuid=_REC_UUID):
 		value=None,
 		metric=None,
 		source_db=None,
-		request_uri=None,
+		request_url=None,
 		retrieved_at=None,
 	)
 
@@ -191,7 +191,7 @@ def _make_readerstats_record(rec_uuid=_REC_UUID):
 		avg_rating=3.77,
 		ratings_count=362177,
 		source_db="https://www.goodreads.com/",
-		request_uri="https://www.goodreads.com/book/show/14942.Mrs_Dalloway",
+		request_url="https://www.goodreads.com/book/show/14942.Mrs_Dalloway",
 		retrieved_at=_RETRIEVED_AT,
 	)
 
@@ -203,7 +203,7 @@ def _make_empty_readerstats_record(rec_uuid=_REC_UUID):
 		avg_rating=None,
 		ratings_count=None,
 		source_db=None,
-		request_uri=None,
+		request_url=None,
 		retrieved_at=None,
 	)
 

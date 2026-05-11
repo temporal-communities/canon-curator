@@ -37,7 +37,7 @@ def _wikidata_geo(
 
 		geo_id = claim.get("entity_id")
 		geo_label = claim.get("label")
-		geo_uri = f"https://www.wikidata.org/entity/{geo_id}" if geo_id else None
+		geo_uri = f"http://www.wikidata.org/entity/{geo_id}" if geo_id else None
 
 		lat = None
 		lon = None
@@ -76,8 +76,8 @@ def _wikidata_geo(
 				sources=[ref["source"] for ref in references if ref["source"]],
 				num_sources=len(references),
 				evidence_level=evidence_level,
-				source_db="https://www.wikidata.org/",
-				request_uri=f"https://www.wikidata.org/entity/{entity_id}",
+				source_db="http://www.wikidata.org/entity/Q2013",
+				request_url=f"{client.wikidata_base}{entity_id}",
 				interpretation_context=f"https://www.wikidata.org/wiki/Property:{property_id}",
 				retrieved_at=retrieval_time,
 			)

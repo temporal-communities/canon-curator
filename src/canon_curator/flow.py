@@ -41,6 +41,7 @@ from canon_curator.enrich.clients import (
 	GoodreadsClient,
 )
 from canon_curator.load import JSONLinesExporter, JSONLDExporter, TurtleExporter
+from canon_curator.validate import validate_shacl
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +86,19 @@ def parse_args() -> argparse.Namespace:
 		"--config-file",
 		type=Path,
 		default=Path(__file__).parent / "config.yml",
-		help="Path to the enrichment strategy config file.",
+		help="Path to the user config file. Required format: YAML.",
+	)
+	parser.add_argument(
+		"--shapes-file",
+		type=Path,
+		default=Path(__file__).parent / "resources/shapes.ttl",
+		help="Path to the SHACL shapes file. Required format: Turtle.",
+	)
+	parser.add_argument(
+		"--ontology-file",
+		type=Path,
+		default=Path(__file__).parent / "resources/ontology.ttl",
+		help="Path to the ontology file. Required format: Turtle.",
 	)
 	return parser.parse_args()
 
@@ -168,10 +181,11 @@ def load(
 	canon_list_metadata_iri: str,
 	output_format: str = "turtle",
 	provenance_format: str = "star",
-) -> None:
+) -> Path | None:
 	if output_format == "jsonlines":
 		with JSONLinesExporter(filename=filename, out_dir=out_dir) as exporter:
 			exporter.export(records)
+		return None
 	elif output_format == "jsonld":
 		with JSONLDExporter(
 			filename=filename,
@@ -182,6 +196,7 @@ def load(
 			provenance_format=provenance_format,
 		) as exporter:
 			exporter.export(records)
+		return Path(out_dir) / filename
 	elif output_format == "turtle":
 		with TurtleExporter(
 			filename=filename,
@@ -192,14 +207,36 @@ def load(
 			provenance_format=provenance_format,
 		) as exporter:
 			exporter.export(records)
+		return Path(out_dir) / filename
 	else:
 		raise ValueError("Output format not supported at this time.")
+
+
+@task
+def validate(
+	graph_path: Path,
+	shapes_path: Path,
+	ontology_path: Path,
+	use_debug_mode: bool = False,
+) -> bool:
+	graph_format = "json-ld" if graph_path.suffix == ".jsonld" else "turtle"
+	conforms, _, results_text = validate_shacl(
+		graph_path=graph_path,
+		shapes_path=shapes_path,
+		ontology_path=ontology_path,
+		graph_format=graph_format,
+	)
+	if not conforms:
+		logger.warning("SHACL validation failed:\n%s", results_text)
+	return conforms
 
 
 @flow(name="enrichment-pipeline")
 def enrichment_pipeline(
 	input_file: Path | str,
 	config_file: Path,
+	shapes_file: Path,
+	ontology_file: Path,
 	out_dir: Path,
 	output_filename: str,
 	canon_list_metadata_iri: str,
@@ -241,37 +278,39 @@ def enrichment_pipeline(
 			readerstats=readerstats_future.result(),
 		)
 
-		load_futures = [
-			load.submit(
-				enriched,
-				f"{output_filename}.jsonl",
-				out_dir,
-				canon_list_iri,
-				canon_list_name,
-				canon_list_metadata_iri,
-				output_format="jsonlines",
-			),
-			load.submit(
-				enriched,
-				f"{output_filename}.jsonld",
-				out_dir,
-				canon_list_iri,
-				canon_list_name,
-				canon_list_metadata_iri,
-				output_format="jsonld",
-				provenance_format="reified",
-			),
-			load.submit(
-				enriched,
-				f"{output_filename}.ttl",
-				out_dir,
-				canon_list_iri,
-				canon_list_name,
-				canon_list_metadata_iri,
-				output_format="turtle",
-			),
-		]
-		wait(load_futures)
+		jsonl_future = load.submit(
+			enriched,
+			f"{output_filename}.jsonl",
+			out_dir,
+			canon_list_iri,
+			canon_list_name,
+			canon_list_metadata_iri,
+			output_format="jsonlines",
+		)
+		jsonld_future = load.submit(
+			enriched,
+			f"{output_filename}.jsonld",
+			out_dir,
+			canon_list_iri,
+			canon_list_name,
+			canon_list_metadata_iri,
+			output_format="jsonld",
+			provenance_format="reified",
+		)
+		turtle_future = load.submit(
+			enriched,
+			f"{output_filename}.ttl",
+			out_dir,
+			canon_list_iri,
+			canon_list_name,
+			canon_list_metadata_iri,
+			output_format="turtle",
+		)
+
+		wait([jsonl_future, jsonld_future, turtle_future])
+
+		jsonld_val_future = validate.submit(jsonld_future.result(), shapes_file, ontology_file)
+		wait([jsonld_val_future])
 
 
 if __name__ == "__main__":
@@ -282,6 +321,8 @@ if __name__ == "__main__":
 	enrichment_pipeline(
 		input_file=args.input_file,
 		config_file=args.config_file,
+		shapes_file=args.shapes_file,
+		ontology_file=args.ontology_file,
 		out_dir=args.out_dir,
 		output_filename=args.output_filename,
 		canon_list_metadata_iri=args.canon_list_metadata_iri,

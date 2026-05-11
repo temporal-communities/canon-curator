@@ -207,12 +207,12 @@ class WikidataClient:
 			"claims": processed,
 		}
 
-	def fetch_sitelinks(self, entity_id: str, wikipedia_only: bool = False) -> int:
+	def fetch_sitelinks(self, entity_id: str, wikipedia_only: bool = True) -> int:
 		"""
 		Fetch the number of sitelinks associated with an entity.
 		Sitelinks are links from a Wikidata entity to corresponding pages on Wikimedia projects
-		(e.g. Wikipedia articles in different languages, Wikiquote pages, etc.). By default, all
-		sitelinks are returned, containing but not limited to Wikipedia pages.
+		(e.g. Wikipedia articles in different languages, Wikiquote pages, etc.). By default, 
+		sitelinks are limited to Wikipedia pages.
 		"""
 		entity = self._fetch_entity(entity_id)
 		if not entity:

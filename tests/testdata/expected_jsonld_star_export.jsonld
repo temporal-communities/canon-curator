@@ -8,20 +8,19 @@
       "hasMetadata": {"@id": "https://example.org/test-list-metadata"}
     },
     {
-      "@id": "https://www.wikidata.org/entity/Q40909",
+      "@id": "http://www.wikidata.org/entity/Q40909",
       "@type": "Author",
       "label": "Virginia Woolf",
-      "recordedGender": {"@id": "https://www.wikidata.org/entity/Q6581072"},
+      "recordedGender": {"@id": "http://www.wikidata.org/entity/Q6581072"},
       "sameAs": [
-        {"@id": "https://d-nb.info/gnd/118635174"},
-        {"@id": "https://www.wikidata.org/entity/Q40909"}
+        {"@id": "https://d-nb.info/gnd/118635174"}
       ]
     },
     {
-      "@id": "https://www.wikidata.org/entity/Q752584",
+      "@id": "http://www.wikidata.org/entity/Q752584",
       "@type": "Work",
       "isPartOf": {"@id": "https://example.org/test-list"},
-      "creator": {"@id": "https://www.wikidata.org/entity/Q40909"},
+      "creator": {"@id": "http://www.wikidata.org/entity/Q40909"},
       "label": "Mrs. Dalloway",
       "title": "Mrs. Dalloway",
       "issued": "1925",
@@ -32,8 +31,7 @@
       "ratingCount": 362177,
       "sameAs": [
         {"@id": "https://d-nb.info/gnd/4316776-7"},
-        {"@id": "https://www.goodreads.com/book/show/841320"},
-        {"@id": "https://www.wikidata.org/entity/Q752584"}
+        {"@id": "https://www.goodreads.com/book/show/841320"}
       ]
     },
     {
@@ -45,42 +43,42 @@
     },
     {
       "@id": {
-        "@id": "https://www.wikidata.org/entity/Q752584",
+        "@id": "http://www.wikidata.org/entity/Q752584",
         "assumedGeolocation": {"@id": "https://d-nb.info/standards/vocab/gnd/geographic-area-code#XA-GB"}
       },
       "hasEnrichment": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000003"}
     },
     {
       "@id": {
-        "@id": "https://www.wikidata.org/entity/Q40909",
-        "recordedGender": {"@id": "https://www.wikidata.org/entity/Q6581072"}
+        "@id": "http://www.wikidata.org/entity/Q40909",
+        "recordedGender": {"@id": "http://www.wikidata.org/entity/Q6581072"}
       },
       "hasEnrichment": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000004"}
     },
     {
       "@id": {
-        "@id": "https://www.wikidata.org/entity/Q752584",
+        "@id": "http://www.wikidata.org/entity/Q752584",
         "sitelinkCount": 20
       },
       "hasEnrichment": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000005"}
     },
     {
       "@id": {
-        "@id": "https://www.wikidata.org/entity/Q752584",
+        "@id": "http://www.wikidata.org/entity/Q752584",
         "ratingValue": 3.77
       },
       "hasEnrichment": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000006"}
     },
     {
       "@id": {
-        "@id": "https://www.wikidata.org/entity/Q752584",
+        "@id": "http://www.wikidata.org/entity/Q752584",
         "ratingCount": 362177
       },
       "hasEnrichment": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000006"}
     },
     {
       "@id": {
-        "@id": "https://www.wikidata.org/entity/Q752584",
+        "@id": "http://www.wikidata.org/entity/Q752584",
         "qRank": 100
       },
       "hasEnrichment": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000007"}
@@ -89,11 +87,11 @@
       "@id": "urn:uuid:00000000-0000-0000-0000-000000000003",
       "@type": "EnrichmentRecord",
       "wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
-        {"@id": "https://www.dnb.de/"}
+        {"@id": "https://isil.staatsbibliothek-berlin.de/isil/DE-588"}
       ],
       "wasGeneratedBy": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000003#activity"},
       "generatedAtTime": "2025-01-01T00:00:00Z",
+      "importedFrom": {"@id": "https://lobid.org/gnd/4316776-7"},
       "sourceAccessedAt": {"@id": "https://wiki.dnb.de/download/attachments/90411323/laendercodeleitfaden.pdf"}
     },
     {
@@ -101,19 +99,18 @@
       "@type": "MetadataEnrichment",
       "generated": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000003"},
       "startedAtTime": "2025-01-01T00:00:00Z",
-      "used": {"@id": "https://lobid.org/gnd/4316776-7"},
       "wasAssociatedWith": {"@id": "https://github.com/temporal-communities/canon-curator/"}
     },
     {
       "@id": "urn:uuid:00000000-0000-0000-0000-000000000004",
       "@type": "EnrichmentRecord",
       "wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
-        {"@id": "https://www.wikidata.org/"}
+        {"@id": "http://www.wikidata.org/entity/Q2013"}
       ],
       "wasGeneratedBy": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000004#activity"},
       "generatedAtTime": "2025-01-01T00:00:00Z",
       "hadPrimarySource": {"@id": "https://www.wikidata.org/entity/Q2494649"},
+      "importedFrom": {"@id": "https://www.wikidata.org/wiki/Special:EntityData/Q40909"},
       "sourceAccessedAt": {"@id": "https://www.wikidata.org/wiki/Property:P21"}
     },
     {
@@ -121,17 +118,16 @@
       "@type": "MetadataEnrichment",
       "generated": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000004"},
       "startedAtTime": "2025-01-01T00:00:00Z",
-      "used": {"@id": "https://www.wikidata.org/entity/Q40909"},
       "wasAssociatedWith": {"@id": "https://github.com/temporal-communities/canon-curator/"}
     },
     {
       "@id": "urn:uuid:00000000-0000-0000-0000-000000000005",
       "@type": "EnrichmentRecord",
       "wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
-        {"@id": "https://www.wikidata.org/"}
+        {"@id": "http://www.wikidata.org/entity/Q2013"}
       ],
       "wasGeneratedBy": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000005#activity"},
+      "importedFrom": {"@id": "https://www.wikidata.org/wiki/Special:EntityData/Q752584"},
       "generatedAtTime": "2025-01-01T00:00:00Z"
     },
     {
@@ -139,17 +135,16 @@
       "@type": "MetadataEnrichment",
       "generated": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000005"},
       "startedAtTime": "2025-01-01T00:00:00Z",
-      "used": {"@id": "https://www.wikidata.org/entity/Q752584"},
       "wasAssociatedWith": {"@id": "https://github.com/temporal-communities/canon-curator/"}
     },
     {
       "@id": "urn:uuid:00000000-0000-0000-0000-000000000006",
       "@type": "EnrichmentRecord",
       "wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
         {"@id": "https://www.goodreads.com/"}
       ],
       "wasGeneratedBy": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000006#activity"},
+      "importedFrom": {"@id": "https://www.goodreads.com/book/show/14942.Mrs_Dalloway"},
       "generatedAtTime": "2025-01-01T00:00:00Z"
     },
     {
@@ -157,17 +152,16 @@
       "@type": "MetadataEnrichment",
       "generated": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000006"},
       "startedAtTime": "2025-01-01T00:00:00Z",
-      "used": {"@id": "https://www.goodreads.com/book/show/14942.Mrs_Dalloway"},
       "wasAssociatedWith": {"@id": "https://github.com/temporal-communities/canon-curator/"}
     },
     {
       "@id": "urn:uuid:00000000-0000-0000-0000-000000000007",
       "@type": "EnrichmentRecord",
       "wasDerivedFrom": [
-        {"@id": "https://example.org/test-list"},
         {"@id": "https://qrank.toolforge.org/"}
       ],
       "wasGeneratedBy": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000007#activity"},
+      "importedFrom": {"@id": "https://qrank.toolforge.org/download/qrank.csv.gz"},
       "generatedAtTime": "2025-01-01T00:00:00Z"
     },
     {
@@ -175,7 +169,6 @@
       "@type": "MetadataEnrichment",
       "generated": {"@id": "urn:uuid:00000000-0000-0000-0000-000000000007"},
       "startedAtTime": "2025-01-01T00:00:00Z",
-      "used": {"@id": "https://qrank.toolforge.org/download/qrank.csv.gz"},
       "wasAssociatedWith": {"@id": "https://github.com/temporal-communities/canon-curator/"}
     },
     {
