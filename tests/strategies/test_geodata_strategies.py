@@ -23,6 +23,7 @@ def test_wikidata_geo_success(
         mocker, base_record, expected_geo_record_wikidata, expected_geo_record_wikidata_no_evidence
 ):
     mock_client = mocker.Mock()
+    mock_client.wikidata_base = "https://www.wikidata.org/wiki/Special:EntityData/"
     mock_client.fetch_property.side_effect = [
         EXPECTED_FETCH_PROPERTY_RESULT_BIRTH_PLACE,
         EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES_ERESOS,

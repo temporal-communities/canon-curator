@@ -11,6 +11,7 @@ from tests.testdata.gnd import EXPECTED_FETCH_PROPERTY_RETURN_GENDER
 @freeze_time("2025-01-01 00:00:00")
 def test_wikidata_author_success(mocker, base_record, expected_author_record_wikidata):
     mock_client = mocker.Mock()
+    mock_client.wikidata_base = "https://www.wikidata.org/wiki/Special:EntityData/"
     mock_client.fetch_property.return_value = EXPECTED_FETCH_PROPERTY_RESULT_GENDER
     result = _wikidata_author("Q40909", "P21", base_record.uuid, client=mock_client)
     assert len(result) == 1
