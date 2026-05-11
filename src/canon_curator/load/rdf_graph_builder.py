@@ -125,11 +125,10 @@ class RDFGraphBuilder:
 			)
 
 		seen_source_dbs: set[str] = set()
-		seen_authors: dict[str, ox.NamedNode] = {}
 		activity_iris: list[ox.NamedNode] = []
 
 		for rec in records:
-			author_iri = self._add_author(store, rec, seen_authors)
+			author_iri = self._add_author(store, rec)
 			work_iri = self._add_work(store, rec, author_iri)
 
 			for geo_rec in rec.geodata or []:
@@ -215,39 +214,27 @@ class RDFGraphBuilder:
 		self,
 		store: ox.Store,
 		rec: EnrichedWorkRecord,
-		seen: dict[str, ox.NamedNode],
 	) -> ox.NamedNode:
 		base = rec.base_data
 		if base.author_qid:
 			iri = ox.NamedNode(f"http://www.wikidata.org/entity/{base.author_qid}")
+			if base.author_gnd_id:
+				store.add(
+					ox.Quad(
+						iri,
+						ox.NamedNode(OWL + "sameAs"),
+						ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}"),
+					)
+				)
 		elif base.author_gnd_id:
 			iri = ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}")
 		else:
 			iri = ox.NamedNode(f"urn:uuid:{base.uuid}#author")
 
-		if iri.value in seen:
-			return seen[iri.value]
-		seen[iri.value] = iri
-
 		store.add(ox.Quad(iri, ox.NamedNode(RDF + "type"), ox.NamedNode(CANON + "Author")))
 		if base.author:
 			store.add(ox.Quad(iri, ox.NamedNode(RDFS + "label"), ox.Literal(base.author)))
-		if base.author_qid:
-			store.add(
-				ox.Quad(
-					iri,
-					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"http://www.wikidata.org/entity/{base.author_qid}"),
-				)
-			)
-		if base.author_gnd_id:
-			store.add(
-				ox.Quad(
-					iri,
-					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"https://d-nb.info/gnd/{base.author_gnd_id}"),
-				)
-			)
+
 		return iri
 
 	def _add_work(
@@ -259,6 +246,14 @@ class RDFGraphBuilder:
 		base = rec.base_data
 		if base.work_qid:
 			iri = ox.NamedNode(f"http://www.wikidata.org/entity/{base.work_qid}")
+			if base.work_gnd_id:
+				store.add(
+					ox.Quad(
+						iri,
+						ox.NamedNode(OWL + "sameAs"),
+						ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}"),
+					)
+				)
 		elif base.work_gnd_id:
 			iri = ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}")
 		else:
@@ -273,22 +268,6 @@ class RDFGraphBuilder:
 		if base.publication_date:
 			store.add(
 				ox.Quad(iri, ox.NamedNode(DCTERMS + "issued"), ox.Literal(base.publication_date))
-			)
-		if base.work_qid:
-			store.add(
-				ox.Quad(
-					iri,
-					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"http://www.wikidata.org/entity/{base.work_qid}"),
-				)
-			)
-		if base.work_gnd_id:
-			store.add(
-				ox.Quad(
-					iri,
-					ox.NamedNode(OWL + "sameAs"),
-					ox.NamedNode(f"https://d-nb.info/gnd/{base.work_gnd_id}"),
-				)
 			)
 		if base.work_goodreads_id:
 			store.add(
