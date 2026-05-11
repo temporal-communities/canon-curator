@@ -15,7 +15,6 @@ canon:WorkShape
         sh:path dct:creator ;
         sh:class canon:Author ;
         sh:minCount 1 ;
-        sh:maxCount 1 ;
         sh:message "Every canon:Work must have exactly one dct:creator of type canon:Author." ;
     ] ;
     sh:property [
