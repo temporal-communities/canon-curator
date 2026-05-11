@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import json
+from io import BytesIO
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -47,27 +48,31 @@ class JSONLDExporter(BaseExporter):
 		)
 
 	def _serialize_star(self, store: ox.Store) -> str:
-		store_dump = store.dump(
+		output = BytesIO()
+		ox.serialize(
+			sorted(store.quads_for_pattern(None, None, None, ox.DefaultGraph()), key=str),
+			output,
 			format=ox.RdfFormat.JSON_LD,
-			from_graph=ox.DefaultGraph(),
 		)
 
-		if store_dump is None:
-			raise RuntimeError("store.dump() returned None unexpectedly")
+		if output is None:
+			raise RuntimeError("ox.serialize() returned None unexpectedly")
 
-		return store_dump.decode()
+		return output.getvalue().decode()
 
 	def _serialize_reified(self, store: ox.Store) -> str:
 		reified_store = convert_to_reified_store(store)
-		store_dump = reified_store.dump(
+		output = BytesIO()
+		ox.serialize(
+			sorted(reified_store.quads_for_pattern(None, None, None, ox.DefaultGraph()), key=str),
+			output,
 			format=ox.RdfFormat.JSON_LD,
-			from_graph=ox.DefaultGraph(),
 		)
 
-		if store_dump is None:
-			raise RuntimeError("store.dump() returned None unexpectedly")
+		if output is None:
+			raise RuntimeError("ox.serialize() returned None unexpectedly")
 
-		return store_dump.decode()
+		return output.getvalue().decode()
 
 	def export(self, records: Sequence[EnrichedWorkRecord]) -> None:
 		if self.file is None or self.file.closed:
