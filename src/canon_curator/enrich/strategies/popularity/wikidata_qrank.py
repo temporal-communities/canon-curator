@@ -25,7 +25,7 @@ def wikidata_qrank(record: BaseWorkRecord, client: QRankClient) -> list[Populari
 			value=qrank,
 			metric=PopularityMetric.QRANK,
 			source_db=f"https://{urlparse(download_url).netloc}/",
-			request_uri=download_url,
+			request_url=download_url,
 			retrieved_at=retrieval_time,
 		)
 	]

@@ -59,7 +59,7 @@ def _wikidata_author(
 				num_sources=len(references),
 				evidence_level=evidence_level,
 				source_db="http://www.wikidata.org/entity/Q2013",
-				request_uri=f"http://www.wikidata.org/entity/{entity_id}",
+				request_url=f"{client.wikidata_base}{entity_id}",
 				interpretation_context=f"https://www.wikidata.org/wiki/Property:{property_id}",
 				retrieved_at=retrieval_time,
 			)

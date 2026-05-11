@@ -336,12 +336,12 @@ class RDFGraphBuilder:
 					ox.NamedNode(enr_rec.source_db),
 				)
 			)
-		if enr_rec.request_uri is not None:
+		if enr_rec.request_url is not None:
 			store.add(
 				ox.Quad(
 					enr_iri,
 					ox.NamedNode(PAV + "importedFrom"),
-					ox.NamedNode(enr_rec.request_uri),
+					ox.NamedNode(enr_rec.request_url),
 				)
 			)
 

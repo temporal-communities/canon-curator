@@ -26,7 +26,7 @@ def _goodreads(
 			avg_rating=float(avg_rating) if avg_rating else None,
 			ratings_count=int(ratings_count) if ratings_count else None,
 			source_db=client.goodreads_base,
-			request_uri=str(featured_url) if featured_url else None,
+			request_url=str(featured_url) if featured_url else None,
 			retrieved_at=retrieval_time,
 		)
 	]

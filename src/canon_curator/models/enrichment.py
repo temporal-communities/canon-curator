@@ -83,7 +83,7 @@ class GeoRecord(EnrichmentRecord):
 	num_sources: int | None = None
 	evidence_level: EvidenceLevel | None = None
 	source_db: str | None = None
-	request_uri: str | None = None
+	request_url: str | None = None
 	interpretation_context: str | None = None
 	retrieved_at: datetime | None = None
 
@@ -96,7 +96,7 @@ class AuthorRecord(EnrichmentRecord):
 	num_sources: int | None = None
 	evidence_level: EvidenceLevel | None = None
 	source_db: str | None = None
-	request_uri: str | None = None
+	request_url: str | None = None
 	interpretation_context: str | None = None
 	retrieved_at: datetime | None = None
 
@@ -106,7 +106,7 @@ class PopularityRecord(EnrichmentRecord):
 	value: int | None = None
 	metric: PopularityMetric | None = None
 	source_db: str | None = None
-	request_uri: str | None = None
+	request_url: str | None = None
 	retrieved_at: datetime | None = None
 
 
@@ -115,5 +115,5 @@ class ReaderstatsRecord(EnrichmentRecord):
 	avg_rating: float | None = None
 	ratings_count: int | None = None
 	source_db: str | None = None
-	request_uri: str | None = None
+	request_url: str | None = None
 	retrieved_at: datetime | None = None
