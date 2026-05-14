@@ -217,7 +217,7 @@ class WikidataClient:
 		"""
 		entity = self._fetch_entity(entity_id)
 		if not entity:
-			return 0
+			return None
 
 		sitelinks = entity.get("sitelinks", {})
 
