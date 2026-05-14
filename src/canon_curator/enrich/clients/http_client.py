@@ -37,6 +37,7 @@ def rate_limited[Self, **P, T](
 			reset_time = self._limiter.get_window_stats(self._limit, self._key).reset_time
 			wait_time = max(0.0, reset_time - time.time())
 			logger.info(
+				f"[thread={threading.get_ident()}] "
 				f"Rate limit exceeded. Waiting for {wait_time:.2f} seconds before retrying..."
 			)
 			time.sleep(wait_time)
