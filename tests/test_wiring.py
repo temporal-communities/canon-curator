@@ -105,11 +105,27 @@ def test_build_enrichers_with_keep_all_chain(
 	assert isinstance(enricher.chain, KeepAllChain)
 
 
-def test_build_geodata_enricher_invalid(registry, bad_config):
-	with pytest.raises(ValueError):
+def test_build_geodata_enricher_missing_section(registry, good_config):
+    good_config.pop("geodata")
+    enricher = build_geodata_enricher(registry, good_config)
+    assert enricher is None
+
+
+def test_raises_on_invalid_strategy(registry, bad_config):
+	with pytest.raises(ValueError, match="Unknown strategy type"):
 		build_geodata_enricher(registry, bad_config)
 
 
-def test_build_readerstats_enricher_invalid(registry, bad_config):
-	with pytest.raises(ValueError):
+def test_raises_on_invalid_chain(registry, bad_config):
+	with pytest.raises(ValueError, match="Unknown chain type"):
 		build_readerstats_enricher(registry, bad_config)
+
+
+def test_raises_on_missing_chain(registry, bad_config):
+	with pytest.raises(ValueError, match="missing required field: 'chain'"):
+		build_popularity_enricher(registry, bad_config)
+
+
+def test_raises_on_missing_strategy(registry, bad_config):
+	with pytest.raises(ValueError, match="missing required field: 'strategies'"):
+		build_authordata_enricher(registry, bad_config)
