@@ -4,6 +4,7 @@ from canon_curator.enrich.clients import WikidataClient
 from tests.testdata.wikidata import (
 	ENTITY_Q17892,
 	ENTITY_Q1018197,
+	ENTITY_Q47008571,
 	CLAIM_BIRTH_PLACE_ERESOS,
 	CLAIM_BIRTH_PLACE_LESBOS,
 	CLAIM_BIRTH_PLACE_MYTILENE,
@@ -164,6 +165,7 @@ def test_fetch_property_returns_empty(mocker, client):
 	[
 		("Q17892", ENTITY_Q17892, False, 148),
 		("Q17892", ENTITY_Q17892, True, 112),
+		("Q47008571", ENTITY_Q47008571, True, 0),
 	],
 )
 def test_fetch_sitelinks_success(mocker, client, entity_id, entity, wikipedia_only, expected_result):
