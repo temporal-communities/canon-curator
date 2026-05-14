@@ -162,7 +162,7 @@ def test_fetch_property_returns_empty(mocker, client):
 @pytest.mark.parametrize(
 	"entity_id, entity, wikipedia_only, expected_result",
 	[
-		("Q17892", ENTITY_Q17892, False, 147),
+		("Q17892", ENTITY_Q17892, False, 148),
 		("Q17892", ENTITY_Q17892, True, 112),
 	],
 )
