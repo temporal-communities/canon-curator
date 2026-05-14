@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 from functools import cached_property
 from types import TracebackType
 from typing import Self
@@ -211,7 +212,7 @@ class WikidataClient:
 		"""
 		Fetch the number of sitelinks associated with an entity.
 		Sitelinks are links from a Wikidata entity to corresponding pages on Wikimedia projects
-		(e.g. Wikipedia articles in different languages, Wikiquote pages, etc.). By default, 
+		(e.g. Wikipedia articles in different languages, Wikiquote pages, etc.). By default,
 		sitelinks are limited to Wikipedia pages.
 		"""
 		entity = self._fetch_entity(entity_id)
@@ -222,7 +223,9 @@ class WikidataClient:
 
 		if wikipedia_only:
 			wikipedia_sitelinks = {
-				site: data for site, data in sitelinks.items() if site.endswith("wiki")
+				site: data
+				for site, data in sitelinks.items()
+				if site.endswith("wiki") and urlparse(data["url"]).netloc.endswith(".wikipedia.org")
 			}
 			return len(wikipedia_sitelinks)
 
