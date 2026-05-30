@@ -12,7 +12,7 @@ Canon Curator currently supports the following enrichment sources:
 - **Geodata** pertaining to the work (e.g. country of origin of the literary work) or author (e.g. birth place of the author): Wikidata and GND
 - **Author data** (currently gender data): Wikidata or GND 
 
-For each type of data (reader statistics, popularity metrics, geodata, gender data), users may specify several enrichment sources (see Usage). 
+For each type of data (reader statistics, popularity metrics, geodata, gender data), users may specify several enrichment sources (see Usage). Data from the GND (Integrated Authority File) is retrieved via the [lobid-gnd endpoint](https://lobid.org/gnd), which is updated every three months. 
 
 ### Enrichment strategies 
 
@@ -51,7 +51,9 @@ JSON-LD and Turtle output builds on the following ontologies and vocabularies:
 
 The data model builds on this [ontology design pattern for place entities](http://www.ontologydesignpatterns.org/cp/owl/place.owl#), the [subactivities pattern](https://doi.org/10.1007/978-3-031-79450-6) and the [Distributed Provenance Model](https://doi.org/10.1038/s41597-022-01537-6). 
 
-Please note that the ontology does not have a stable, dereferenceable namespace URI yet. A GitHub URL is used in the JSON-LD and Turtle output as a placeholder. 
+> [!NOTE]  
+> Please note that the ontology does not have a stable, dereferenceable URI yet. A GitHub URL is used in the JSON-LD and Turtle output as a placeholder.
+
 
 ## Usage 
 
@@ -60,7 +62,11 @@ Please note that the ontology does not have a stable, dereferenceable namespace 
 - [uv](https://github.com/astral-sh/uv)
 - a canon list
 
-  :exclamation: Make sure your canon list is in CSV or TSV format and follows the structure described in [Canon Shelf](https://github.com/temporal-communities/canon-shelf)
+
+> [!IMPORTANT]  
+> Make sure your canon list is in CSV or TSV format and follows the structure described in [Canon Shelf](https://github.com/temporal-communities/canon-shelf).
+
+
 
 ### Run the pipeline
 
@@ -125,6 +131,72 @@ Copy the ID of the flow you wish to cancel, then run:
 
 ```bash
 uv run prefect flow-run cancel <FLOW-ID>
+```
+
+### Query the output
+
+The default Turtle RDF 1.2 output can be queried with pyoxigraph. For instance, to retrieve all geolocation enrichments for all works in the graph, along with associated provenance information, and serialize query results to CSV, run: 
+
+```python
+
+from pyoxigraph import Store, RdfFormat, QueryResultsFormat
+
+store = Store()
+store.load(path="ontology.ttl", format=RdfFormat.TURTLE)
+store.bulk_load(
+    path="2025-spiegel-canon-international.ttl",
+    format=RdfFormat.TURTLE
+)
+
+
+solutions = store.query(
+    """
+    PREFIX canon: <https://github.com/temporal-communities/canon-curator/ontology/>
+    PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX prov:  <http://www.w3.org/ns/prov#>
+    PREFIX pav:   <http://purl.org/pav/>
+
+    SELECT ?work ?p ?location ?sourceDatabase ?primarySource ?sourceContext ?sourceDataset ?agent ?retrievedAt
+    WHERE {
+    ?work a canon:Work .
+    ?p rdfs:subPropertyOf canon:geolocation .
+    ?work ?p ?location .
+
+        << ?work ?p ?location >> canon:hasEnrichment ?rec .
+
+        OPTIONAL { ?rec prov:generatedAtTime   ?retrievedAt }
+        OPTIONAL { ?rec prov:wasDerivedFrom    ?sourceDatabase }
+        OPTIONAL { ?rec prov:hadPrimarySource  ?primarySource }
+        OPTIONAL { ?rec pav:sourceAccessedAt   ?sourceContext }
+        OPTIONAL { ?rec pav:importedFrom       ?sourceDataset }
+
+        OPTIONAL {
+            ?rec prov:wasGeneratedBy ?act .
+            ?act prov:wasAssociatedWith ?agent .
+        }
+    }
+    """
+)
+
+solutions.serialize("query_results.csv", format=QueryResultsFormat.CSV)
+
+```
+
+Please refer to the [pyoxigraph documentation](https://pyoxigraph.readthedocs.io/en/stable/store.html#pyoxigraph.Store.query) for more serialization options. 
+
+The easiest way to inspect the enriched data in a tabular format is to parse the JSON Lines output into a Pandas dataframe. For instance, to parse only the popularity metrics and reader statistics into a Pandas dataframe and serialize the dataframe to TSV, run: 
+
+```python 
+import pandas as pd
+
+df = pd.read_json("2025-spiegel-canon-international.jsonl", lines=True)
+
+base    = pd.json_normalize(df["base_data"]).drop(columns=["uuid"])
+stats   = pd.json_normalize(df["readerstats"].explode()).drop(columns=["uuid", "work_uuid"])
+metrics   = pd.json_normalize(df["wd_metrics"].explode()).drop(columns=["uuid", "work_uuid"])
+
+pd.concat([base, stats, metrics], axis=1).to_csv("spiegel_canon.tsv", sep="\t", index=False)
+
 ```
 
 ## Contribute 
