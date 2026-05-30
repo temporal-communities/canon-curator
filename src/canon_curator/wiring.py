@@ -42,17 +42,31 @@ def make_strategy_registry(
 		"goodreads": make_goodreads_readerstats(goodreads_client),
 	}
 
+def _get_enricher_config(user_config: dict, key: str) -> dict | None:
+    cfg = user_config.get(key)
+    if cfg is None:
+        return None
+    if not cfg.get("strategies"):
+        raise ValueError(f"'{key}' config is missing required field: 'strategies'")
+    if not cfg.get("chain"):
+        raise ValueError(f"'{key}' config is missing required field: 'chain'")
+    return cfg
+
 
 def _build_strategy_chain(
 	registry: dict[str, Strategy], strategies: list[str], chain_type: str
 ) -> StrategyChain:
 	if chain_type not in CHAIN_CONSTRUCTORS:
 		raise ValueError(
-			f"{chain_type!r} is not a valid chain type. Allowed: {', '.join(CHAIN_CONSTRUCTORS)}"
+			f"Unknown chain type: {chain_type!r}. Allowed: {', '.join(CHAIN_CONSTRUCTORS)}"
 		)
 
 	chain_constructor = CHAIN_CONSTRUCTORS[chain_type]
-	resolved_strategies = [registry[strategy] for strategy in strategies]
+	resolved_strategies = []
+	for strategy in strategies:
+		if strategy not in registry:
+			raise ValueError(f"Unknown strategy type: {strategy!r}. Allowed: {', '.join(registry)}")
+		resolved_strategies.append(registry[strategy])
 
 	return chain_constructor(resolved_strategies)
 
@@ -60,8 +74,10 @@ def _build_strategy_chain(
 def build_geodata_enricher(
 	registry: dict,
 	user_config: dict,
-) -> GeodataEnricher:
-	cfg = user_config["geodata"]
+) -> GeodataEnricher | None:
+	cfg = _get_enricher_config(user_config, "geodata")
+	if cfg is None: 
+		return None
 
 	return GeodataEnricher(
 		chain=_build_strategy_chain(
@@ -76,9 +92,10 @@ def build_geodata_enricher(
 def build_authordata_enricher(
 	registry: dict,
 	user_config: dict,
-) -> AuthordataEnricher:
-	cfg = user_config["authordata"]
-
+) -> AuthordataEnricher | None:
+	cfg = _get_enricher_config(user_config, "authordata")
+	if cfg is None: 
+		return None
 	return AuthordataEnricher(
 		chain=_build_strategy_chain(
 			registry,
@@ -93,8 +110,10 @@ def build_popularity_enricher(
 	registry: dict,
 	user_config: dict,
 	qrank_client: QRankClient | None = None,
-) -> PopularityEnricher:
-	cfg = user_config["popularity"]
+) -> PopularityEnricher | None:
+	cfg = _get_enricher_config(user_config, "popularity")
+	if cfg is None: 
+		return None
 
 	return PopularityEnricher(
 		chain=_build_strategy_chain(
@@ -110,8 +129,10 @@ def build_popularity_enricher(
 def build_readerstats_enricher(
 	registry: dict,
 	user_config: dict,
-) -> ReaderstatEnricher:
-	cfg = user_config["readerstats"]
+) -> ReaderstatEnricher | None:
+	cfg = _get_enricher_config(user_config, "readerstats")
+	if cfg is None: 
+		return None
 
 	return ReaderstatEnricher(
 		chain=_build_strategy_chain(

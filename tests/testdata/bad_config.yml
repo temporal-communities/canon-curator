@@ -2,14 +2,11 @@ geodata:
   chain: first-success
   strategies:
     - wikidata_p495
-    - goodreads
+    - invalid-strategy
     - wikidata_p19
 
 authordata:
   chain: first-success
-  strategies:
-    - gnd_gender
-    - wikidata_p21
 
 readerstats:
   chain: invalid-chain
@@ -17,7 +14,6 @@ readerstats:
     - goodreads
 
 popularity:
-  chain: first-success
   strategies:
     - wikidata_sitelinks
     - wikidata_qrank

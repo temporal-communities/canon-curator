@@ -1,6 +1,7 @@
 import argparse
 import logging
 import yaml
+from urllib.parse import urlparse
 from datetime import timedelta
 from pathlib import Path
 from collections.abc import Iterable, Mapping, Sequence
@@ -61,7 +62,7 @@ def parse_args() -> argparse.Namespace:
 		description="Enrich a canon list TSV with geodata, author data, popularity, and reader statistics.",
 		formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 	)
-	parser.add_argument("--input-file", required=True, help="Path to the input TSV file.")
+	parser.add_argument("--input-file", required=True, help="Path or IRI to the input TSV file.")
 	parser.add_argument(
 		"--out-dir",
 		type=Path,
@@ -74,7 +75,7 @@ def parse_args() -> argparse.Namespace:
 	parser.add_argument(
 		"--canon-list-iri",
 		required=False,
-		help="Optional override for canon list IRI.",
+		help="IRI identifying the canon list. Required when --input-file is a local file path.",
 	)
 	parser.add_argument(
 		"--canon-list-name", required=True, help="Human-readable name of the canon list."
@@ -263,19 +264,37 @@ def enrichment_pipeline(
 
 		base_records = extract(input_file)
 
-		geodata_future = enrich_geo.submit(base_records, geodata_enricher)
-		authordata_future = enrich_author.submit(base_records, authordata_enricher)
-		popularity_future = enrich_popularity.submit(base_records, popularity_enricher)
-		readerstats_future = enrich_readerstats.submit(base_records, readerstats_enricher)
+		geodata_future = (
+			enrich_geo.submit(base_records, geodata_enricher) if geodata_enricher else None
+		)
+		authordata_future = (
+			enrich_author.submit(base_records, authordata_enricher) if authordata_enricher else None
+		)
+		popularity_future = (
+			enrich_popularity.submit(base_records, popularity_enricher)
+			if popularity_enricher
+			else None
+		)
+		readerstats_future = (
+			enrich_readerstats.submit(base_records, readerstats_enricher)
+			if readerstats_enricher
+			else None
+		)
 
-		wait([geodata_future, authordata_future, popularity_future, readerstats_future])  # type: ignore
+		wait(
+			[
+				f
+				for f in [geodata_future, authordata_future, popularity_future, readerstats_future]
+				if f
+			]
+		)  # type: ignore
 
 		enriched = merge(
 			base_recs=base_records,
-			geodata=geodata_future.result(),
-			authordata=authordata_future.result(),
-			popularity=popularity_future.result(),
-			readerstats=readerstats_future.result(),
+			geodata=geodata_future.result() if geodata_future else {},
+			authordata=authordata_future.result() if authordata_future else {},
+			popularity=popularity_future.result() if popularity_future else {},
+			readerstats=readerstats_future.result() if readerstats_future else {},
 		)
 
 		jsonl_future = load.submit(
@@ -316,7 +335,8 @@ def enrichment_pipeline(
 if __name__ == "__main__":
 	setup_logging()
 	args = parse_args()
-	canon_list_iri = args.canon_list_iri or str(args.input_file)
+	if not args.canon_list_iri and not urlparse(str(args.input_file)).scheme:
+		raise SystemExit("error: --canon-list-iri is required when --input-file is a local path")
 
 	enrichment_pipeline(
 		input_file=args.input_file,
@@ -326,6 +346,6 @@ if __name__ == "__main__":
 		out_dir=args.out_dir,
 		output_filename=args.output_filename,
 		canon_list_metadata_iri=args.canon_list_metadata_iri,
-		canon_list_iri=canon_list_iri,
+		canon_list_iri=args.canon_list_iri,
 		canon_list_name=args.canon_list_name,
 	)
