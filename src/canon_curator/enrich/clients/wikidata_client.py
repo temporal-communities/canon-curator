@@ -21,7 +21,7 @@ class WikidataClient:
 	def __init__(
 		self,
 		name: str = "wikidata",
-		rate_limit="200/minute",
+		rate_limit="2/second",
 		wikidata_base: str = "https://www.wikidata.org/wiki/Special:EntityData/",
 	) -> None:
 		self.name = name

@@ -24,7 +24,17 @@ def rate_limited[Self, **P, T](
 
 	This decorator ensures that calls to the decorated method comply with
 	the rate limit set in the instance. If the limit is exceeded, it pauses
-	execution until the rate limit resets before retrying the request.
+	execution until the rate limit resets before retrying the request. 
+	Note that HttpClient currently sets _limiter to a MovingWindowRateLimiter 
+	which implements a rate limiting strategy, in which X requests are allowed 
+	in a moving window of Y seconds. Each request is logged, and once the oldest 
+	entry in the log expires because it is no longer within the rate limit window,
+	a new request is allowed. This means that the rate limiter itself does not 
+	space requests; if the window is set to, for example, 200 requests a minute, 
+	then in a concurrent scenario, the first 200 requests can be made in fast 
+	succession, followed by a long wait time. To ensure requests are spaced out 
+	evenly, clients should provide the rate limit in requests per second. This 
+	is, however, not enforced. 
 
 	The decorated function must be an instance method of a class that has:
 	- A `_limiter` attribute (an instance of `MovingWindowRateLimiter`).
@@ -37,6 +47,7 @@ def rate_limited[Self, **P, T](
 			reset_time = self._limiter.get_window_stats(self._limit, self._key).reset_time
 			wait_time = max(0.0, reset_time - time.time())
 			logger.info(
+				f"[thread={threading.get_ident()}] "
 				f"Rate limit exceeded. Waiting for {wait_time:.2f} seconds before retrying..."
 			)
 			time.sleep(wait_time)
