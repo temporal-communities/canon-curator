@@ -13,7 +13,7 @@ def wikidata_sitelinks(record: BaseWorkRecord, client: WikidataClient) -> list[P
 		return [PopularityRecord.empty()]
 	retrieval_time = datetime.now(UTC)
 	num_sitelinks = client.fetch_sitelinks(record.work_qid)
-	if not num_sitelinks:
+	if num_sitelinks is None:
 		return [PopularityRecord.empty()]
 
 	return [

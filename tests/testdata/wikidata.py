@@ -7,6 +7,9 @@ with open(Q17892_PATH, "r", encoding="utf-8") as f:
 Q1018197_PATH = Path(__file__).parent.parent / "testdata" / "Q1018197.json"
 with open(Q1018197_PATH, "r", encoding="utf-8") as f: 
 	ENTITY_Q1018197 = json.load(f)
+Q47008571_PATH = Path(__file__).parent.parent / "testdata" / "Q47008571.json"
+with open(Q47008571_PATH, "r", encoding="utf-8") as f:
+	ENTITY_Q47008571 = json.load(f)
 
 
 CLAIM_BIRTH_PLACE_ERESOS = {
