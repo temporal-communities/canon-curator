@@ -1,6 +1,8 @@
 # CANON ONTOLOGY
 # Version 1.0 (Beta)
 # 06.11.2025
+# Please note that this is a beta version intended for testing. 
+# The ontology namespace and URI are meant as placeholders. 
 
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -38,7 +40,6 @@ canon:EnrichmentRecord a owl:Class ;
 canon:Location a owl:Class ;
     rdfs:subClassOf place:Place ;
     rdfs:label "Place"@en ;
-    rdfs:comment "Represents physical places with latitude and longitude, or references to norm data." . # from Viewsari
 
 # Activities
 
