@@ -23,37 +23,37 @@
 
 canon:CanonList a owl:Class ;
     rdfs:subClassOf dct:Collection ;
-    rdfs:label "Canon List"@en .
+    rdfs:label "canon list"@en .
 
 canon:Work a owl:Class ;
     rdfs:subClassOf dct:BibliographicResource ;
-    rdfs:label "Work"@en .
+    rdfs:label "work"@en .
 
 canon:Author a owl:Class ;
     rdfs:subClassOf dct:Agent ;
-    rdfs:label "Author"@en .
+    rdfs:label "author"@en .
 
 canon:EnrichmentRecord a owl:Class ;
     rdfs:subClassOf prov:Entity ;
-    rdfs:label "Enrichment Record"@en .
+    rdfs:label "enrichment record"@en .
 
 canon:Location a owl:Class ;
     rdfs:subClassOf place:Place ;
-    rdfs:label "Place"@en ;
+    rdfs:label "location"@en .
 
 # Activities
 
 canon:EnrichmentActivity a owl:Class ;
     rdfs:subClassOf prov:Activity ;
-    rdfs:label "Enrichment activity"@en .
+    rdfs:label "enrichment activity"@en .
 
 canon:EntityReconciliation a owl:Class ;
     rdfs:subClassOf canon:EnrichmentActivity ;
-    rdfs:label "Entity reconciliation"@en .
+    rdfs:label "entity reconciliation"@en .
 
 canon:MetadataEnrichment a owl:Class ;
     rdfs:subClassOf canon:EnrichmentActivity ;
-    rdfs:label "Metadata enrichment"@en .
+    rdfs:label "metadata enrichment"@en .
 
 
 ### PROPERTIES
@@ -69,46 +69,46 @@ canon:hasMetadata a owl:ObjectProperty ;
     rdfs:domain canon:CanonList .
 
 canon:geolocation a owl:ObjectProperty ;
-    rdfs:label "Geolocation"@en ;
+    rdfs:label "geolocation"@en ;
     rdfs:subPropertyOf place:hasLocation ;
     rdfs:range canon:Location .
 
 canon:authorBirthPlace a owl:ObjectProperty ;
-    rdfs:label "Place of birth of author"@en ;
+    rdfs:label "place of birth"@en ;
     rdfs:subPropertyOf canon:geolocation ;
     rdfs:domain canon:Author ;
-    rdfs:comment "F.e. Wikidata P19" .
+    rdfs:comment "E.g. Wikidata P19" .
 
 canon:workOrigin a owl:ObjectProperty ;
-    rdfs:label "Place of origin of a work"@en ;
+    rdfs:label "place of origin"@en ;
     rdfs:subPropertyOf canon:geolocation ;
     rdfs:domain canon:Work ;
-    rdfs:comment "F.e. Wikidata P495" .
+    rdfs:comment "E.g. Wikidata P495" .
 
 canon:assumedGeolocation a owl:ObjectProperty ;
-    rdfs:label "Assumed geolocation with unclear provenance"@en ;
-    rdfs:subPropertyOf canon:geolocation .
+    rdfs:label "assumed geolocation"@en ;
+    rdfs:subProprtyOf canon:geolocation .
 
 canon:gender a owl:ObjectProperty ;
-    rdfs:label "Gender"@en ;
+    rdfs:label "gender"@en ;
     rdfs:domain canon:Author .
 
 canon:assumedGender a owl:ObjectProperty ;
-    rdfs:label "Assumed Gender"@en ;
+    rdfs:label "assumed gender"@en ;
     rdfs:subPropertyOf canon:gender .
 
 canon:recordedGender a owl:ObjectProperty ;
-    rdfs:label "Recorded Gender"@en ;
+    rdfs:label "recorded gender"@en ;
     rdfs:subPropertyOf canon:gender .
 
 canon:selfIdentifiedGender a owl:ObjectProperty ;
-    rdfs:label "Self-identified Gender"@en ;
+    rdfs:label "self-identified gender"@en ;
     rdfs:subPropertyOf canon:gender .
 
 # Data Properties
 
 canon:popularityMetric a owl:DatatypeProperty ;
-    rdfs:label "Popularity metric"@en ;
+    rdfs:label "popularity metric"@en ;
     rdfs:range xsd:decimal .
 
 canon:qRank a owl:DatatypeProperty ;
@@ -116,14 +116,14 @@ canon:qRank a owl:DatatypeProperty ;
     rdfs:range xsd:integer .
 
 canon:sitelinkCount a owl:DatatypeProperty ;
-    rdfs:label "Sitelink count"@en ;
+    rdfs:label "sitelink count"@en ;
     rdfs:range xsd:integer .
 
 canon:ratingValue a owl:DatatypeProperty ;
-    rdfs:label "Rating value"@en ;
+    rdfs:label "rating value"@en ;
     rdfs:range xsd:decimal .
 
 canon:ratingCount a owl:DatatypeProperty ;
-    rdfs:label "Rating count"@en ;
+    rdfs:label "rating count"@en ;
     rdfs:range xsd:integer .
 
