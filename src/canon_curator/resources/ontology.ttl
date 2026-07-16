@@ -107,23 +107,27 @@ canon:selfIdentifiedGender a owl:ObjectProperty ;
 
 # Data Properties
 
-canon:popularityMetric a owl:DatatypeProperty ;
-    rdfs:label "popularity metric"@en ;
-    rdfs:range xsd:decimal .
+canon:canonicityMetric a owl:DatatypeProperty ;
+    rdfs:label "canonicity metric"@en ;
+    rdfs:domain canon:Work .
 
 canon:qRank a owl:DatatypeProperty ;
     rdfs:label "QRank rank"@en ;
+    rdfs:subPropertyOf canon:canonicityMetric ;
     rdfs:range xsd:integer .
 
 canon:sitelinkCount a owl:DatatypeProperty ;
     rdfs:label "sitelink count"@en ;
+    rdfs:subPropertyOf canon:canonicityMetric ;
     rdfs:range xsd:integer .
 
 canon:ratingValue a owl:DatatypeProperty ;
     rdfs:label "rating value"@en ;
+    rdfs:subPropertyOf canon:canonicityMetric ;
     rdfs:range xsd:decimal .
 
 canon:ratingCount a owl:DatatypeProperty ;
     rdfs:label "rating count"@en ;
+    rdfs:subPropertyOf canon:canonicityMetric ;
     rdfs:range xsd:integer .
 
