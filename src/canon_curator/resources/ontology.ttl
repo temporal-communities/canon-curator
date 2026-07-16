@@ -71,23 +71,28 @@ canon:hasMetadata a owl:ObjectProperty ;
 canon:geolocation a owl:ObjectProperty ;
     rdfs:label "geolocation"@en ;
     rdfs:subPropertyOf place:hasLocation ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( canon:Author canon:Work ) ] ;
     rdfs:range canon:Location .
 
 canon:authorBirthPlace a owl:ObjectProperty ;
     rdfs:label "place of birth"@en ;
     rdfs:subPropertyOf canon:geolocation ;
     rdfs:domain canon:Author ;
+    rdfs:range canon:Location ;
     rdfs:comment "E.g. Wikidata P19" .
 
 canon:workOrigin a owl:ObjectProperty ;
     rdfs:label "place of origin"@en ;
     rdfs:subPropertyOf canon:geolocation ;
     rdfs:domain canon:Work ;
+    rdfs:range canon:Location ;
     rdfs:comment "E.g. Wikidata P495" .
 
 canon:assumedGeolocation a owl:ObjectProperty ;
     rdfs:label "assumed geolocation"@en ;
-    rdfs:subProprtyOf canon:geolocation .
+    rdfs:subPropertyOf canon:geolocation ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( canon:Author canon:Work ) ] ;
+    rdfs:range canon:Location .
 
 canon:gender a owl:ObjectProperty ;
     rdfs:label "gender"@en ;
@@ -95,15 +100,18 @@ canon:gender a owl:ObjectProperty ;
 
 canon:assumedGender a owl:ObjectProperty ;
     rdfs:label "assumed gender"@en ;
-    rdfs:subPropertyOf canon:gender .
+    rdfs:subPropertyOf canon:gender ;
+    rdfs:domain canon:Author .
 
 canon:recordedGender a owl:ObjectProperty ;
     rdfs:label "recorded gender"@en ;
-    rdfs:subPropertyOf canon:gender .
+    rdfs:subPropertyOf canon:gender ;
+    rdfs:domain canon:Author .
 
 canon:selfIdentifiedGender a owl:ObjectProperty ;
     rdfs:label "self-identified gender"@en ;
-    rdfs:subPropertyOf canon:gender .
+    rdfs:subPropertyOf canon:gender ;
+    rdfs:domain canon:Author .
 
 # Data Properties
 
@@ -114,20 +122,24 @@ canon:canonicityMetric a owl:DatatypeProperty ;
 canon:qRank a owl:DatatypeProperty ;
     rdfs:label "QRank rank"@en ;
     rdfs:subPropertyOf canon:canonicityMetric ;
+    rdfs:domain canon:Work ;
     rdfs:range xsd:integer .
 
 canon:sitelinkCount a owl:DatatypeProperty ;
     rdfs:label "sitelink count"@en ;
     rdfs:subPropertyOf canon:canonicityMetric ;
+    rdfs:domain canon:Work ;
     rdfs:range xsd:integer .
 
 canon:ratingValue a owl:DatatypeProperty ;
     rdfs:label "rating value"@en ;
     rdfs:subPropertyOf canon:canonicityMetric ;
+    rdfs:domain canon:Work ;
     rdfs:range xsd:decimal .
 
 canon:ratingCount a owl:DatatypeProperty ;
     rdfs:label "rating count"@en ;
     rdfs:subPropertyOf canon:canonicityMetric ;
+    rdfs:domain canon:Work ;
     rdfs:range xsd:integer .
 
