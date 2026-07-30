@@ -2,14 +2,12 @@ import argparse
 import logging
 import yaml
 from urllib.parse import urlparse
-from datetime import timedelta
 from pathlib import Path
 from collections.abc import Iterable, Mapping, Sequence
 from uuid import UUID
 
 from prefect import flow, task
 from prefect.futures import wait
-from prefect.tasks import task_input_hash
 
 
 from canon_curator.models import (
@@ -118,7 +116,7 @@ def extract(input_file: Path | str) -> Iterable[BaseWorkRecord]:
 		return reader.read_file()
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+@task
 def enrich_geo(
 	records: Iterable[BaseWorkRecord],
 	enricher: GeodataEnricher,
@@ -127,7 +125,7 @@ def enrich_geo(
 	return enricher.enrich(records)
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+@task
 def enrich_author(
 	records: Iterable[BaseWorkRecord],
 	enricher: AuthordataEnricher,
@@ -136,7 +134,7 @@ def enrich_author(
 	return enricher.enrich(records)
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+@task
 def enrich_popularity(
 	records: Iterable[BaseWorkRecord],
 	enricher: PopularityEnricher,
@@ -145,7 +143,7 @@ def enrich_popularity(
 	return enricher.enrich(records)
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+@task
 def enrich_readerstats(
 	records: Iterable[BaseWorkRecord],
 	enricher: ReaderstatEnricher,
@@ -334,7 +332,7 @@ def enrichment_pipeline(
 		wait([jsonld_val_future])
 
 
-if __name__ == "__main__":
+def main() -> None:
 	setup_logging()
 	args = parse_args()
 	canon_list_iri = args.canon_list_iri
@@ -359,3 +357,7 @@ if __name__ == "__main__":
 		canon_list_iri=canon_list_iri,
 		canon_list_name=args.canon_list_name,
 	)
+
+
+if __name__ == "__main__":
+	main()
