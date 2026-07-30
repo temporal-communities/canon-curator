@@ -245,8 +245,8 @@ def enrichment_pipeline(
 	canon_list_name: str,
 ) -> None:
 	"""Read user config, call build functions from wiring.py to build enrichers and call tasks."""
-	with open(config_file, encoding="utf-8") as f:
-		user_config = yaml.safe_load(f)
+
+	user_config = load_config(config_file)
 
 	with (
 		QRankClient() as qrank_client,
