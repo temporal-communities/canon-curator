@@ -259,7 +259,9 @@ def enrichment_pipeline(
 		)
 		geodata_enricher = build_geodata_enricher(registry, user_config)
 		authordata_enricher = build_authordata_enricher(registry, user_config)
-		popularity_enricher = build_popularity_enricher(registry, user_config, qrank_client, wikidata_client)
+		popularity_enricher = build_popularity_enricher(
+			registry, user_config, qrank_client, wikidata_client
+		)
 		readerstats_enricher = build_readerstats_enricher(registry, user_config)
 
 		base_records = extract(input_file)
@@ -335,8 +337,16 @@ def enrichment_pipeline(
 if __name__ == "__main__":
 	setup_logging()
 	args = parse_args()
-	if not args.canon_list_iri and not urlparse(str(args.input_file)).scheme:
-		raise SystemExit("error: --canon-list-iri is required when --input-file is a local path")
+	canon_list_iri = args.canon_list_iri
+	if not args.canon_list_iri:
+		if not urlparse(str(args.input_file)).scheme:
+			raise SystemExit(
+				"error: --canon-list-iri is required when --input-file is a local path"
+			)
+		canon_list_iri = str(args.input_file)
+		logger.warning(
+			"No --canon-list-iri provided; using the input file URL to identify the canon list"
+		)
 
 	enrichment_pipeline(
 		input_file=args.input_file,
@@ -346,6 +356,6 @@ if __name__ == "__main__":
 		out_dir=args.out_dir,
 		output_filename=args.output_filename,
 		canon_list_metadata_iri=args.canon_list_metadata_iri,
-		canon_list_iri=args.canon_list_iri,
+		canon_list_iri=canon_list_iri,
 		canon_list_name=args.canon_list_name,
 	)
