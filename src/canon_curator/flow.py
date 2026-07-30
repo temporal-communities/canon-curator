@@ -259,7 +259,7 @@ def enrichment_pipeline(
 		)
 		geodata_enricher = build_geodata_enricher(registry, user_config)
 		authordata_enricher = build_authordata_enricher(registry, user_config)
-		popularity_enricher = build_popularity_enricher(registry, user_config, qrank_client)
+		popularity_enricher = build_popularity_enricher(registry, user_config, qrank_client, wikidata_client)
 		readerstats_enricher = build_readerstats_enricher(registry, user_config)
 
 		base_records = extract(input_file)

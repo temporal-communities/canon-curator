@@ -42,15 +42,16 @@ def make_strategy_registry(
 		"goodreads": make_goodreads_readerstats(goodreads_client),
 	}
 
+
 def _get_enricher_config(user_config: dict, key: str) -> dict | None:
-    cfg = user_config.get(key)
-    if cfg is None:
-        return None
-    if not cfg.get("strategies"):
-        raise ValueError(f"'{key}' config is missing required field: 'strategies'")
-    if not cfg.get("chain"):
-        raise ValueError(f"'{key}' config is missing required field: 'chain'")
-    return cfg
+	cfg = user_config.get(key)
+	if cfg is None:
+		return None
+	if not cfg.get("strategies"):
+		raise ValueError(f"'{key}' config is missing required field: 'strategies'")
+	if not cfg.get("chain"):
+		raise ValueError(f"'{key}' config is missing required field: 'chain'")
+	return cfg
 
 
 def _build_strategy_chain(
@@ -76,7 +77,7 @@ def build_geodata_enricher(
 	user_config: dict,
 ) -> GeodataEnricher | None:
 	cfg = _get_enricher_config(user_config, "geodata")
-	if cfg is None: 
+	if cfg is None:
 		return None
 
 	return GeodataEnricher(
@@ -94,7 +95,7 @@ def build_authordata_enricher(
 	user_config: dict,
 ) -> AuthordataEnricher | None:
 	cfg = _get_enricher_config(user_config, "authordata")
-	if cfg is None: 
+	if cfg is None:
 		return None
 	return AuthordataEnricher(
 		chain=_build_strategy_chain(
@@ -110,9 +111,10 @@ def build_popularity_enricher(
 	registry: dict,
 	user_config: dict,
 	qrank_client: QRankClient | None = None,
+	wikidata_client: WikidataClient | None = None,
 ) -> PopularityEnricher | None:
 	cfg = _get_enricher_config(user_config, "popularity")
-	if cfg is None: 
+	if cfg is None:
 		return None
 
 	return PopularityEnricher(
@@ -123,6 +125,7 @@ def build_popularity_enricher(
 		),
 		strategies=cfg["strategies"],
 		qrank_client=qrank_client if "wikidata_qrank" in cfg["strategies"] else None,
+		wikidata_client=wikidata_client if "wikidata_sitelinks" in cfg["strategies"] else None,
 	)
 
 
@@ -131,7 +134,7 @@ def build_readerstats_enricher(
 	user_config: dict,
 ) -> ReaderstatEnricher | None:
 	cfg = _get_enricher_config(user_config, "readerstats")
-	if cfg is None: 
+	if cfg is None:
 		return None
 
 	return ReaderstatEnricher(
