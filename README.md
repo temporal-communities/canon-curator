@@ -80,7 +80,7 @@ uv sync
 4. Run the pipeline: 
 
 ```bash
-uv run python src/canon_curator/flow.py \
+uv run canon-curator \
   --input-file "<INPUT_FILE_URL>" \
   --out-dir "<OUTPUT_DIRECTORY>" \
   --output-filename "<OUTPUT_FILENAME>" \
@@ -88,12 +88,12 @@ uv run python src/canon_curator/flow.py \
   [--canon-list-iri "<CANON_LIST_IRI>"] \
   --canon-list-metadata-iri "<CANON_LIST_METADATA_IRI>"
 ```
-Note that `--canon-list-iri` is optional when `--input-file` is a URL, as the URL is used as the IRI. 
+Note that `--canon-list-iri` is optional when `--input-file` is a URL, in which case the input URL is used as a fallback IRI. However, this is meant for convenience only; providing an explicit IRI is recommended.
 
 **Example 1: Input is URL** 
 
 ```bash
-uv run python src/canon_curator/flow.py \
+uv run canon-curator \
   --input-file "https://raw.githubusercontent.com/temporal-communities/canon-shelf/main/lists/2025-spiegel-canon-international/2025-spiegel-canon-international.tsv" \
   --out-dir "./out" \
   --output-filename "2025-spiegel-canon-international" \
@@ -104,12 +104,12 @@ uv run python src/canon_curator/flow.py \
 **Example 2: Input is local path** 
 
 ```bash
-uv run python src/canon_curator/flow.py \
+uv run canon-curator \
   --input-file "/path/to/your/file.tsv" \
   --out-dir "./out" \
   --output-filename "2025-spiegel-canon-international" \
   --canon-list-name "Spiegel Canon International 2025" \
-  --canon-list-iri "https://raw.githubusercontent.com/temporal-communities/canon-shelf/main/lists/2025-spiegel-canon-international/2025-spiegel-canon-international.tsv" \
+  --canon-list-iri "https://example.org/canons/2025-spiegel-canon-international" \
   --canon-list-metadata-iri "https://raw.githubusercontent.com/temporal-communities/canon-shelf/main/lists/2025-spiegel-canon-international/2025-spiegel-canon-international-metadata.json"
 ```
 
@@ -130,7 +130,7 @@ uv run prefect flow-run ls
 Copy the ID of the flow you wish to cancel, then run: 
 
 ```bash
-uv run prefect flow-run cancel <FLOW-ID>
+uv run prefect flow-run cancel <FLOW-RUN-ID>
 ```
 
 ### Query the output
