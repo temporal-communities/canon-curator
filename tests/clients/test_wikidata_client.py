@@ -27,6 +27,8 @@ from tests.testdata.wikidata import (
 	EXPECTED_FETCH_PROPERTY_RESULT_BIRTH_PLACE,
 	EXPECTED_FETCH_PROPERTY_RESULT_COORDINATES,
 	EXPECTED_EMPTY_RESULT,
+	WIKIPEDIA_DBLIST,
+	EXPECTED_WIKIPEDIA_SITES,
 )
 
 
@@ -174,5 +176,12 @@ def test_fetch_sitelinks_success(mocker, client, entity_id, entity, wikipedia_on
 		"canon_curator.enrich.clients.WikidataClient._fetch_entity",
 		return_value=entity_data,
 	)
+	mocker.patch("canon_curator.enrich.clients.http_client.HttpClient.fetch_page", return_value=mocker.Mock(text=WIKIPEDIA_DBLIST))
+	client.prefetch()
 	result = client.fetch_sitelinks(entity_id, wikipedia_only)
 	assert result == expected_result
+
+def test_prefetch_success(mocker, client):
+	mocker.patch("canon_curator.enrich.clients.http_client.HttpClient.fetch_page", return_value=mocker.Mock(text=WIKIPEDIA_DBLIST))
+	client.prefetch()
+	assert client.wikipedia_sites == EXPECTED_WIKIPEDIA_SITES

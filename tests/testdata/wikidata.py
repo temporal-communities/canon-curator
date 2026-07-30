@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+WIKIPEDIA_DBLIST_PATH = Path(__file__).parent.parent / "testdata" / "wikipedia_dblist.txt"
+WIKIPEDIA_DBLIST = WIKIPEDIA_DBLIST_PATH.read_text(encoding="utf-8")
+
 Q17892_PATH = Path(__file__).parent.parent / "testdata" / "Q17892.json"
 with open(Q17892_PATH, "r", encoding="utf-8") as f: 
 	ENTITY_Q17892 = json.load(f)
@@ -559,4 +562,70 @@ EXPECTED_FETCH_PROPERTY_RESULT_GENDER = {
 			"rank": "normal",
 		}
 	],
+}
+
+
+EXPECTED_WIKIPEDIA_SITES = {
+    "aawiki", "abwiki", "acewiki", "adywiki", "afwiki", "akwiki",
+    "alswiki", "altwiki", "amiwiki", "amwiki", "angwiki", "annwiki",
+    "anpwiki", "anwiki", "arcwiki", "arwiki", "arywiki", "arzwiki",
+    "astwiki", "aswiki", "atjwiki", "avkwiki", "avwiki", "awawiki",
+    "aywiki", "azbwiki", "azwiki", "banwiki", "barwiki", "bat_smgwiki",
+    "bawiki", "bbcwiki", "bclwiki", "bdrwiki", "be_x_oldwiki", "bewiki",
+    "bewwiki", "bgwiki", "bhwiki", "biwiki", "bjnwiki", "blkwiki",
+    "bmwiki", "bnwiki", "bolwiki", "bowiki", "bpywiki", "brwiki",
+    "bswiki", "btmwiki", "bugwiki", "bxrwiki", "cawiki", "cbk_zamwiki",
+    "cdowiki", "cebwiki", "cewiki", "chowiki", "chrwiki", "chwiki",
+    "chywiki", "ckbwiki", "cowiki", "crhwiki", "crwiki", "csbwiki",
+    "cswiki", "cuwiki", "cvwiki", "cywiki", "dagwiki", "dawiki",
+    "dewiki", "dgawiki", "dinwiki", "diqwiki", "dsbwiki", "dtpwiki",
+    "dtywiki", "dvwiki", "dzwiki", "eewiki", "elwiki", "emlwiki",
+    "enwiki", "eowiki", "eswiki", "etwiki", "euwiki", "extwiki",
+    "fatwiki", "fawiki", "ffwiki", "fiu_vrowiki", "fiwiki", "fjwiki",
+    "fonwiki", "fowiki", "frpwiki", "frrwiki", "frwiki", "furwiki",
+    "fywiki", "gagwiki", "ganwiki", "gawiki", "gcrwiki", "gdwiki",
+    "glkwiki", "glwiki", "gnwiki", "gomwiki", "gorwiki", "gotwiki",
+    "gpewiki", "gucwiki", "gurwiki", "guwiki", "guwwiki", "gvwiki",
+    "hakwiki", "hawiki", "hawwiki", "hewiki", "hifwiki", "hiwiki",
+    "howiki", "hrwiki", "hsbwiki", "htwiki", "huwiki", "hywiki",
+    "hywwiki", "hzwiki", "iawiki", "ibawiki", "idwiki", "iewiki",
+    "iglwiki", "igwiki", "iiwiki", "ikwiki", "ilowiki", "inhwiki",
+    "iowiki", "isvwiki", "iswiki", "itwiki", "iuwiki", "jamwiki",
+    "jawiki", "jbowiki", "jvwiki", "kaawiki", "kabwiki", "kaiwiki",
+    "kajwiki", "kawiki", "kbdwiki", "kbpwiki", "kcgwiki", "kgewiki",
+    "kgwiki", "kiwiki", "kjwiki", "kkwiki", "klwiki", "kmwiki",
+    "kncwiki", "knwiki", "koiwiki", "kowiki", "krcwiki", "krwiki",
+    "kshwiki", "kswiki", "kuswiki", "kuwiki", "kvwiki", "kwwiki",
+    "kywiki", "ladwiki", "lawiki", "lbewiki", "lbwiki", "lezwiki",
+    "lfnwiki", "lgwiki", "lijwiki", "liwiki", "lldwiki", "lmowiki",
+    "lnwiki", "lowiki", "lrcwiki", "ltgwiki", "ltwiki", "lvwiki",
+    "madwiki", "magwiki", "maiwiki", "map_bmswiki", "mdfwiki", "mgwiki",
+    "mhrwiki", "mhwiki", "minwiki", "miwiki", "mkwiki", "mlwiki",
+    "mniwiki", "mnwiki", "mnwwiki", "moswiki", "mrjwiki", "mrwiki",
+    "mswiki", "mtwiki", "muswiki", "mwlwiki", "myvwiki", "mywiki",
+    "mznwiki", "nahwiki", "napwiki", "nawiki", "nds_nlwiki", "ndswiki",
+    "newiki", "newwiki", "ngwiki", "niawiki", "nlwiki", "nnwiki",
+    "novwiki", "nowiki", "nqowiki", "nrmwiki", "nrwiki", "nsowiki",
+    "nupwiki", "nvwiki", "nywiki", "ocwiki", "olowiki", "omwiki",
+    "orwiki", "oswiki", "pagwiki", "pamwiki", "papwiki", "pawiki",
+    "pcdwiki", "pcmwiki", "pdcwiki", "pflwiki", "pihwiki", "piwiki",
+    "plwiki", "pmswiki", "pnbwiki", "pntwiki", "pplwiki", "pswiki",
+    "ptwiki", "pwnwiki", "quwiki", "rkiwiki", "rmwiki", "rmywiki",
+    "rnwiki", "roa_rupwiki", "roa_tarawiki", "rowiki", "rskwiki", "ruewiki",
+    "ruwiki", "rwwiki", "sahwiki", "satwiki", "sawiki", "scnwiki",
+    "scowiki", "scwiki", "sdwiki", "sewiki", "sgwiki", "shiwiki",
+    "shnwiki", "shwiki", "simplewiki", "siwiki", "skrwiki", "skwiki",
+    "slwiki", "smnwiki", "smwiki", "snwiki", "sowiki", "sqwiki",
+    "srnwiki", "srwiki", "sswiki", "stqwiki", "stwiki", "suwiki",
+    "svwiki", "swwiki", "sylwiki", "szlwiki", "szywiki", "tawiki",
+    "taywiki", "tcywiki", "tddwiki", "tenwiki", "test2wiki", "testwiki",
+    "tetwiki", "tewiki", "tgwiki", "thwiki", "tigwiki", "tiwiki",
+    "tkwiki", "tlwiki", "tlywiki", "tnwiki", "tokwiki", "towiki",
+    "tpiwiki", "trvwiki", "trwiki", "tswiki", "ttwiki", "tumwiki",
+    "twwiki", "tyvwiki", "tywiki", "udmwiki", "ugwiki", "ukwiki",
+    "urwiki", "uzwiki", "vecwiki", "vepwiki", "vewiki", "viwiki",
+    "vlswiki", "vowiki", "warwiki", "wawiki", "wowiki", "wuuwiki",
+    "xalwiki", "xhwiki", "xmfwiki", "yiwiki", "yowiki", "zawiki",
+    "zeawiki", "zghwiki", "zh_classicalwiki", "zh_min_nanwiki", "zh_yuewiki", "zhwiki",
+    "zuwiki",
 }
