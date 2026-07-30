@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.scripts]
-canon-curator = "canon_curator.flow:enrichment_pipeline"
+canon-curator = "canon_curator.flow:main"
 
 [build-system]
 requires = ["hatchling"]
