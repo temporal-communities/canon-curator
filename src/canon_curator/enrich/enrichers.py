@@ -11,7 +11,7 @@ from canon_curator.models import (
 	ReaderstatsRecord,
 )
 from canon_curator.enrich.chains import StrategyChain
-from canon_curator.enrich.clients import QRankClient
+from canon_curator.enrich.clients import QRankClient, WikidataClient
 
 
 class BaseEnricher[T: EnrichmentRecord]:
@@ -40,7 +40,7 @@ class BaseEnricher[T: EnrichmentRecord]:
 		"""Applies the strategy chain to each record and collect results."""
 		enrichment_recs: dict[UUID, Sequence[T]] = {}
 		for rec in records:
-			if rec.uuid is None: 
+			if rec.uuid is None:
 				raise ValueError(f"Cannot enrich record without UUID. Record: {rec}")
 			enrichment_recs[rec.uuid] = self.chain.run(rec)
 		return enrichment_recs
@@ -65,13 +65,15 @@ class PopularityEnricher(BaseEnricher[PopularityRecord]):
 		chain: StrategyChain,
 		strategies: Iterable[str],
 		qrank_client: QRankClient | None = None,
+		wikidata_client: WikidataClient | None = None,
 	) -> None:
 		super().__init__(chain, strategies)
 		self._qrank_client = qrank_client
+		self._wikidata_client = wikidata_client
 
-	def enrich(
-		self, records: Iterable[BaseWorkRecord]
-	) -> dict[UUID, Sequence[PopularityRecord]]:
+	def enrich(self, records: Iterable[BaseWorkRecord]) -> dict[UUID, Sequence[PopularityRecord]]:
+		if self._wikidata_client is not None:
+			self._wikidata_client.prefetch()
 		if self._qrank_client is not None:
 			qids = [rec.work_qid for rec in records if rec.work_qid]
 			self._qrank_client.prefetch(qids)
