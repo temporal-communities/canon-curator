@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import urlparse
 from functools import cached_property
 from types import TracebackType
 from typing import Self
@@ -23,10 +22,13 @@ class WikidataClient:
 		name: str = "wikidata",
 		rate_limit="2/second",
 		wikidata_base: str = "https://www.wikidata.org/wiki/Special:EntityData/",
+		wikipedia_sites_url: str = "https://noc.wikimedia.org/conf/dblists/wikipedia.dblist",
 	) -> None:
 		self.name = name
 		self.rate_limit = rate_limit
 		self.wikidata_base = wikidata_base
+		self.wikipedia_sites_url = wikipedia_sites_url
+		self.wikipedia_sites: set[str] | None = None
 
 	def __enter__(self) -> Self:
 		"""Enable the use of WikidataClient as a context manager."""
@@ -38,7 +40,8 @@ class WikidataClient:
 		exc_value: BaseException | None,
 		traceback: TracebackType | None,
 	) -> None:
-		"""Ensure HttpClient is closed when exiting the context."""
+		"""Ensure HttpClient is closed and wikipedia_sites is reset when exiting the context."""
+		self.wikipedia_sites = None
 		if "_http_client" in self.__dict__:
 			self._http_client.__exit__(exc_type, exc_value, traceback)
 
@@ -208,7 +211,19 @@ class WikidataClient:
 			"claims": processed,
 		}
 
-	def fetch_sitelinks(self, entity_id: str, wikipedia_only: bool = True) -> int:
+	def prefetch(self) -> None:
+		if self.wikipedia_sites:
+			return
+
+		response = self._http_client.fetch_page(self.wikipedia_sites_url)
+		if not response:
+			raise RuntimeError(f"Failed to fetch {self.wikipedia_sites_url}")
+
+		self.wikipedia_sites = set(
+			line.strip() for line in response.text.splitlines() if not line.lstrip().startswith("#")
+		)
+
+	def fetch_sitelinks(self, entity_id: str, wikipedia_only: bool = True) -> int | None:
 		"""
 		Fetch the number of sitelinks associated with an entity.
 		Sitelinks are links from a Wikidata entity to corresponding pages on Wikimedia projects
@@ -222,10 +237,12 @@ class WikidataClient:
 		sitelinks = entity.get("sitelinks", {})
 
 		if wikipedia_only:
+			if not self.wikipedia_sites:
+				return None
 			wikipedia_sitelinks = {
 				site: data
 				for site, data in sitelinks.items()
-				if site.endswith("wiki") and urlparse(data["url"]).netloc.endswith(".wikipedia.org")
+				if site.endswith("wiki") and site in self.wikipedia_sites
 			}
 			return len(wikipedia_sitelinks)
 
