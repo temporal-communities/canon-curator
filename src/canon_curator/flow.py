@@ -2,14 +2,12 @@ import argparse
 import logging
 import yaml
 from urllib.parse import urlparse
-from datetime import timedelta
 from pathlib import Path
 from collections.abc import Iterable, Mapping, Sequence
 from uuid import UUID
 
 from prefect import flow, task
 from prefect.futures import wait
-from prefect.tasks import task_input_hash
 
 
 from canon_curator.models import (
@@ -118,7 +116,7 @@ def extract(input_file: Path | str) -> Iterable[BaseWorkRecord]:
 		return reader.read_file()
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+@task
 def enrich_geo(
 	records: Iterable[BaseWorkRecord],
 	enricher: GeodataEnricher,
@@ -127,7 +125,7 @@ def enrich_geo(
 	return enricher.enrich(records)
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+@task
 def enrich_author(
 	records: Iterable[BaseWorkRecord],
 	enricher: AuthordataEnricher,
@@ -136,7 +134,7 @@ def enrich_author(
 	return enricher.enrich(records)
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+@task
 def enrich_popularity(
 	records: Iterable[BaseWorkRecord],
 	enricher: PopularityEnricher,
@@ -145,7 +143,7 @@ def enrich_popularity(
 	return enricher.enrich(records)
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(hours=1))
+@task
 def enrich_readerstats(
 	records: Iterable[BaseWorkRecord],
 	enricher: ReaderstatEnricher,
@@ -245,8 +243,8 @@ def enrichment_pipeline(
 	canon_list_name: str,
 ) -> None:
 	"""Read user config, call build functions from wiring.py to build enrichers and call tasks."""
-	with open(config_file, encoding="utf-8") as f:
-		user_config = yaml.safe_load(f)
+
+	user_config = load_config(config_file)
 
 	with (
 		QRankClient() as qrank_client,
@@ -259,7 +257,9 @@ def enrichment_pipeline(
 		)
 		geodata_enricher = build_geodata_enricher(registry, user_config)
 		authordata_enricher = build_authordata_enricher(registry, user_config)
-		popularity_enricher = build_popularity_enricher(registry, user_config, qrank_client, wikidata_client)
+		popularity_enricher = build_popularity_enricher(
+			registry, user_config, qrank_client, wikidata_client
+		)
 		readerstats_enricher = build_readerstats_enricher(registry, user_config)
 
 		base_records = extract(input_file)
@@ -332,11 +332,19 @@ def enrichment_pipeline(
 		wait([jsonld_val_future])
 
 
-if __name__ == "__main__":
+def main() -> None:
 	setup_logging()
 	args = parse_args()
-	if not args.canon_list_iri and not urlparse(str(args.input_file)).scheme:
-		raise SystemExit("error: --canon-list-iri is required when --input-file is a local path")
+	canon_list_iri = args.canon_list_iri
+	if not args.canon_list_iri:
+		if not urlparse(str(args.input_file)).scheme:
+			raise SystemExit(
+				"error: --canon-list-iri is required when --input-file is a local path"
+			)
+		canon_list_iri = str(args.input_file)
+		logger.warning(
+			"No --canon-list-iri provided; using the input file URL to identify the canon list"
+		)
 
 	enrichment_pipeline(
 		input_file=args.input_file,
@@ -346,6 +354,10 @@ if __name__ == "__main__":
 		out_dir=args.out_dir,
 		output_filename=args.output_filename,
 		canon_list_metadata_iri=args.canon_list_metadata_iri,
-		canon_list_iri=args.canon_list_iri,
+		canon_list_iri=canon_list_iri,
 		canon_list_name=args.canon_list_name,
 	)
+
+
+if __name__ == "__main__":
+	main()
