@@ -44,7 +44,7 @@ Available export formats are:
 ### Data model 
 
 JSON-LD and Turtle output builds on the following ontologies and vocabularies: 
-- CANON, a lightweight domain ontology that can be found [here](https://github.com/temporal-communities/canon-curator/blob/refactor/workflow-management/src/canon_curator/resources/ontology.ttl) (for core classes and properties)
+- CANON, a lightweight domain ontology that can be found [here](https://github.com/temporal-communities/canon-curator/blob/main/src/canon_curator/resources/ontology.ttl) (for core classes and properties)
 - PROV and PAV (for enrichment provenance)
 - Basic Geo (WGS84 lat/long) (for latitude and longitude)
 - Dublin Core Terms
